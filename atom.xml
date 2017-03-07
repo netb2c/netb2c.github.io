@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-03-06T06:54:33.000Z</updated>
+  <updated>2017-03-07T07:41:32.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -14,6 +14,53 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>关于Apache Struts2（S2-045）漏洞情况的通报</title>
+    <link href="http://blog.unixmen.cn/2017/03/07/%E5%85%B3%E4%BA%8EApache-Struts2%EF%BC%88S2-045%EF%BC%89%E6%BC%8F%E6%B4%9E%E6%83%85%E5%86%B5%E7%9A%84%E9%80%9A%E6%8A%A5/"/>
+    <id>http://blog.unixmen.cn/2017/03/07/关于Apache-Struts2（S2-045）漏洞情况的通报/</id>
+    <published>2017-03-07T07:28:49.000Z</published>
+    <updated>2017-03-07T07:41:32.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>关于Apache Struts2 （S2-045）远程代码执行漏洞通报<br>近日，国家信息安全漏洞库（CNNVD）收到关于Apache Struts2 （S2-045）远程代码执行漏洞（<a href="http://www.cnnvd.org.cn/vulnerability/show/cv_id/2017030152" target="_blank" rel="external">CNNVD-201703-152</a>）的情况报送。由于该漏洞影响范围广，危害级别高，国家信息安全漏洞库（CNNVD）对此进行了跟踪分析，情况如下：</p>
+<h1 id="一、-漏洞简介"><a href="#一、-漏洞简介" class="headerlink" title="一、 漏洞简介"></a>一、 漏洞简介</h1><p>Apache Struts是美国阿帕奇（Apache）软件基金会负责维护的一个开源项目，是一套用于创建企业级Java Web 应用的开源MVC框架，主要提供两个版本框架产品： Struts 1和Struts 2。  </p>
+<p>ApacheStruts 2.3.5 – 2.3.31版本及2.5 – 2.5.10版本存在远程代码执行漏洞（CNNVD-201703-152 ，CVE-2017-5638）。该漏洞是由于上传功能的异常处理函数没有正确处理用户输入的错误信息。导致远程攻击者可通过发送恶意的数据包，利用该漏洞在受影响服务器上执行任意命令。    </p>
+<h1 id="二、-漏洞危害"><a href="#二、-漏洞危害" class="headerlink" title="二、 漏洞危害"></a>二、 漏洞危害</h1><p>攻击者可通过发送恶意构造的HTTP数据包利用该漏洞，在受影响服务器上执行系统命令，进一步可完全控制该服务器，造成拒绝服务、数据泄露、网站造篡改等影响。由于该漏洞利用无需任何前置条件（如开启dmi ，debug等功能）以及启用任何插件，因此漏洞危害较为严重。</p>
+<h1 id="三、-修复措施"><a href="#三、-修复措施" class="headerlink" title="三、 修复措施"></a>三、 修复措施</h1><p>目前，Apache官方已针对该漏洞发布安全公告。请受影响用户及时检查是否受该漏洞影响。</p>
+<ul>
+<li>自查方式</li>
+</ul>
+<p>用户可查看web目录下/WEB-INF/lib/目录下的struts-core.x.x.jar 文件，如果这个版本在Struts2.3.5 到 Struts2.3.31 以及 Struts2.5 到 Struts2.5.10之间则存在漏洞。</p>
+<ul>
+<li>升级修复</li>
+</ul>
+<p>受影响用户可升级版本至<a href="https://cwiki.apache.org/confluence/display/WW/Version+Notes+2.3.32" target="_blank" rel="external">Apache Struts 2.3.32</a> 或 <a href="https://cwiki.apache.org/confluence/display/WW/Version+Notes+2.5.10.1" target="_blank" rel="external">Apache Struts 2.5.10.1</a>以消除漏洞影响。</p>
+<ul>
+<li>临时缓解</li>
+</ul>
+<p>如用户不方便升级，可采取如下临时解决方案：</p>
+<p> 删除commons-fileupload-x.x.x.jar文件（会造成上传功能不可用）。</p>
+<ul>
+<li>相关链接<br><a href="https://cwiki.apache.org/confluence/display/WW/S2-045" target="_blank" rel="external">Aapache 安全公告</a></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;关于Apache Struts2 （S2-045）远程代码执行漏洞通报&lt;br&gt;近日，国家信息安全漏洞库（CNNVD）收到关于Apache Struts2 （S2-045）远程代码执行漏洞（&lt;a href=&quot;http://www.cnnvd.org.cn/vulnerabil
+    
+    </summary>
+    
+      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
+    
+      <category term="漏洞" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/"/>
+    
+      <category term="安全" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="struts2" scheme="http://blog.unixmen.cn/tags/struts2/"/>
+    
+  </entry>
   
   <entry>
     <title>广告拦截APP&quot;AdClear&quot; for 安卓/iOS</title>

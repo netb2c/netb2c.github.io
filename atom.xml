@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-03-29T00:45:47.000Z</updated>
+  <updated>2017-03-29T01:09:13.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -20,10 +20,9 @@
     <link href="http://blog.unixmen.cn/2017/03/29/%E9%80%9A%E8%BF%87%E8%BF%90%E7%BB%B4%E5%AF%86%E7%A0%81%E5%AE%9E%E7%8E%B0Linux%E7%B3%BB%E7%BB%9FSSH%E5%8F%8C%E5%9B%A0%E5%AD%90%E8%AE%A4%E8%AF%81/"/>
     <id>http://blog.unixmen.cn/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/</id>
     <published>2017-03-29T00:38:24.000Z</published>
-    <updated>2017-03-29T00:45:47.000Z</updated>
+    <updated>2017-03-29T01:09:13.000Z</updated>
     
-    <content type="html"><![CDATA[<p>[toc]</p>
-<p>#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证</p>
+    <content type="html"><![CDATA[<p>#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证</p>
 <p>##关于本文</p>
 <p>本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”<a href="https://github.com/google/google-authenticator" target="_blank" rel="external">Google Authenticator</a>“实现Linux系统OpenSSH双因子认证对SSH进行安全加固。</p>
 <p>##前言/背景</p>
@@ -247,10 +246,9 @@
     
     <summary type="html">
     
-      &lt;p&gt;[toc]&lt;/p&gt;
-&lt;p&gt;#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证&lt;/p&gt;
+      &lt;p&gt;#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证&lt;/p&gt;
 &lt;p&gt;##关于本文&lt;/p&gt;
-&lt;p&gt;本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”&lt;a href=&quot;https://github
+&lt;p&gt;本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”&lt;a href=&quot;https://github.com/google/g
     
     </summary>
     

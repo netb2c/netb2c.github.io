@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-03-29T01:17:29.000Z</updated>
+  <updated>2017-03-29T03:05:42.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://blog.unixmen.cn/2017/03/29/%E9%80%9A%E8%BF%87%E8%BF%90%E7%BB%B4%E5%AF%86%E7%A0%81%E5%AE%9E%E7%8E%B0Linux%E7%B3%BB%E7%BB%9FSSH%E5%8F%8C%E5%9B%A0%E5%AD%90%E8%AE%A4%E8%AF%81/"/>
     <id>http://blog.unixmen.cn/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/</id>
     <published>2017-03-29T00:38:24.000Z</published>
-    <updated>2017-03-29T01:17:29.000Z</updated>
+    <updated>2017-03-29T03:05:42.000Z</updated>
     
     <content type="html"><![CDATA[<h1 id="通过运维密码实现Linux系统SSH双因子认证"><a href="#通过运维密码实现Linux系统SSH双因子认证" class="headerlink" title="通过运维密码实现Linux系统SSH双因子认证"></a>通过运维密码实现Linux系统SSH双因子认证</h1><h2 id="关于本文"><a href="#关于本文" class="headerlink" title="关于本文"></a>关于本文</h2><p>本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”<a href="https://github.com/google/google-authenticator" target="_blank" rel="external">Google Authenticator</a>“实现Linux系统OpenSSH双因子认证对SSH进行安全加固。</p>
 <h2 id="前言-背景"><a href="#前言-背景" class="headerlink" title="前言/背景"></a>前言/背景</h2><p>近来很多知名企业都出现了密码泄露，业内对多重认证的呼声也越来越高。</p>
@@ -106,6 +106,11 @@
 </ul>
 <p>输入y之后你将看到一个二维码，它使用如下二维码图形格式表示我们数字形态的密钥。注：一会我们要用到它在运维密码上完成配置。</p>
 <p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/erweima.png" alt=""></p>
+<ul>
+<li><p>紧急验证码<br>在生成密钥的同时生成了几个紧急验证码，当然，也是一次性使用的，请妥善保存。</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/emergency.png" alt=""></p>
+</li>
+</ul>
 <ul>
 <li><p>保存Google Authenticator配置文件</p>
 <p>Google Authenticator 虽然运行了，但是相关设置还没有保存，接下来会提示保存：</p>

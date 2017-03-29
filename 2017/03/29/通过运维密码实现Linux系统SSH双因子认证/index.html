@@ -1,0 +1,231 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="Life &amp; Work Essays."><title>通过运维密码实现Linux系统SSH双因子认证 | Netb2c's Blog</title><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/5.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/grids-responsive-min.css"><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">通过运维密码实现Linux系统SSH双因子认证</h1><a id="logo" href="/.">Netb2c's Blog</a><p class="description">We'd better struggle for the future rather than regret for the past.</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">通过运维密码实现Linux系统SSH双因子认证</h1><div class="post-meta">Mar 29, 2017<span> | </span><span class="category"><a href="/categories/技术文档/">技术文档</a><a href="/categories/技术文档/Tools/">工具</a><a href="/categories/技术文档/Tools/安全/">安全</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> Hits</span></span></div><a data-thread-key="2017/03/29/通过运维密码实现Linux系统SSH双因子认证/" href="/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/#comments" class="ds-thread-count"></a><div class="post-content"><p>[toc]</p>
+<p>#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证</p>
+<p>##关于本文</p>
+<p>本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”<a href="https://github.com/google/google-authenticator" target="_blank" rel="external">Google Authenticator</a>“实现Linux系统OpenSSH双因子认证对SSH进行安全加固。</p>
+<p>##前言/背景</p>
+<p>近来很多知名企业都出现了密码泄露，业内对多重认证的呼声也越来越高。</p>
+<h2 id="双因子认证"><a href="#双因子认证" class="headerlink" title="双因子认证"></a>双因子认证</h2><ul>
+<li>什么是双因子认证</li>
+</ul>
+<p>双因子认证（Two-factor authentication，也叫2FA），是一种通过组合两种不同的验证方式进行用户身份验证的机制。</p>
+<ul>
+<li><p>在这种多重认证的系统中，用户需要通过两种不同的认证程序：</p>
+<ul>
+<li><p>提供他们知道的信息（如 用户名/密码）</p>
+</li>
+<li><p>再借助其他工具提供用户所不知道的信息（如用手机生成的一次性密码）</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>##SSH双因子认证实现思路</p>
+<p>使用“运维密码”结合“Google身份验证器”及Linux系统“OpenSSH”双因子认证对SSH进行安全加固。</p>
+<ul>
+<li>关于Google 身份验证器</li>
+</ul>
+<p>为了鼓励广泛采用双因子认证的方式，Google 公司发布了 Google 身份验证器<a href="https://github.com/google/google-authenticator" target="_blank" rel="external">Google Authenticator</a>，一款开源的，可基于开放规则（如 HMAP/ 基于时间）生成一次性密码的软件。这是一款跨平台软件，可运行在 Linux、 Android、 iOS。Google 公司同时也支持插件式鉴别模块PAM （pluggable authentication module），使其能和其他也适用 PAM 进行验证的工具（如 OpenSSH）协同工作。</p>
+<ul>
+<li>关于运维密码</li>
+</ul>
+<p>Linux.中国社区长期接触互联网新技术的最前沿，洞察大势所趋，身兼新技术广泛传播及维护互联网安全的重任，以及方便运维及新技术的传播开发了运维密码小程序。</p>
+<p>##如何开始</p>
+<p>首先我们需要一些准备工作：</p>
+<ul>
+<li><p>一台运行着 OpenSSH 服务版本大于6.2的 Linux 主机</p>
+</li>
+<li><p>一台能运行微信的智能手机</p>
+</li>
+<li><p>一台支持SSH登陆的终端</p>
+</li>
+</ul>
+<p>##在 Linux 系统中安装 Google 身份验证器</p>
+<p>第一步需要在运行着 OpenSSH 服务的 Linux 主机上安装 Google 身份验证器。按照如下步骤安装 Google 身份验证器及其PAM模块。</p>
+<h3 id="用安装包安装-Google-身份验证器"><a href="#用安装包安装-Google-身份验证器" class="headerlink" title="用安装包安装 Google 身份验证器"></a>用安装包安装 Google 身份验证器</h3><p>如果你不想自己构建 Google 身份验证器，在几个 Linux 发行版上有已经编译好的安装包。安装包里面包含 Google 身份验证器 二进制程序和 PAM 模块。</p>
+<ul>
+<li>在 Ubuntu 上安装 Google 身份验证器：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">sudo apt-get install libpam-google-authenticator</div></pre></td></tr></table></figure>
+<ul>
+<li>在 Fedora 上安装 Google 身份验证器：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">sudo dnf install google-authenticator</div></pre></td></tr></table></figure>
+<ul>
+<li>在 CentOS 上安装 Google 身份验证器：</li>
+</ul>
+<p>在 CentOS 上安装 Google 身份验证器 ，需要首先启用 EPEL 软件库，然后运行如下命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">sudo yum install google-authenticator</div></pre></td></tr></table></figure>
+<h3 id="编译安装-Google-身份验证器"><a href="#编译安装-Google-身份验证器" class="headerlink" title="编译安装 Google 身份验证器"></a>编译安装 Google 身份验证器</h3><p>首先，安装构建 Google 身份验证器所需的软件包。</p>
+<ul>
+<li>在 Debian、 Ubuntu 或 Linux Mint 上：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">sudo apt-get install wget make gcc libpam0g-dev</div></pre></td></tr></table></figure>
+<ul>
+<li>在 CentOS、 Fedora 或 RHEL上：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">sudo yum install wget make gcc pam-devel</div></pre></td></tr></table></figure>
+<ul>
+<li>然后下载 Google 身份验证器的源代码</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">git clone https://github.com/google/google-authenticator.git</div></pre></td></tr></table></figure>
+<ul>
+<li>编译安装Google 身份验证器：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">cd google-authenticator/libpam</div><div class="line"></div><div class="line">./bootstrap.sh</div><div class="line"></div><div class="line">./configure</div><div class="line"></div><div class="line">make</div></pre></td></tr></table></figure>
+<p>如果构建成功，你会在目录中看到 pam_google_authenticator.so 和 google-authenticator 两个文件。</p>
+<p>最后，将 Google 身份验证器安装到合适位置。默认会安装到 /usr/local/lib/security 下，根据你的系统不同，你可能需要将其符号链接到 pam 库的位置（比如 CentOS 7 会在 /usr/lib64/security）。如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/gamod.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">sudo make install</div></pre></td></tr></table></figure>
+<p>至此，Google 身份验证器安装完成。</p>
+<h2 id="配置Google-身份验证器及运维密码"><a href="#配置Google-身份验证器及运维密码" class="headerlink" title="配置Google 身份验证器及运维密码"></a>配置Google 身份验证器及运维密码</h2><p>完成Google 身份验证器的安装我们仅仅完成了第一步，接着需要对Google 身份验证器、运维密码、SSH进行配置才能达到我们预期的效果。</p>
+<h3 id="配置google-authenticator及生成验证密钥"><a href="#配置google-authenticator及生成验证密钥" class="headerlink" title="配置google-authenticator及生成验证密钥"></a>配置google-authenticator及生成验证密钥</h3><ul>
+<li>使用（以下）命令生成验证密钥</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">google-authenticator</div></pre></td></tr></table></figure>
+<ul>
+<li><p>生成验证密钥的时候，会再次确认信息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Do you want authentication tokens to be time-based (y/n)</div></pre></td></tr></table></figure>
+<p>意思是：你想要生产基于时间生成验证码吗？这里需要需要输入y</p>
+</li>
+</ul>
+<p>输入y之后你将看到一个二维码，它使用如下二维码图形格式表示我们数字形态的密钥。注：一会我们要用到它在运维密码上完成配置。</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/erweima.png" alt=""></p>
+<ul>
+<li><p>保存Google Authenticator配置文件</p>
+<p>Google Authenticator 虽然运行了，但是相关设置还没有保存，接下来会提示保存：</p>
+<p>意思是：你想将配置文件写入到“/root/.google_authenticator”保存吗？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Do you want me to update your &quot;/root/.google_authenticator&quot; file? (y/n)</div></pre></td></tr></table></figure>
+<p>输入y回车</p>
+</li>
+</ul>
+<ul>
+<li><p>禁止同一令牌多用途登陆</p>
+<p>意思是：你是否要禁用同一密钥多用途登陆，这将限制你每30秒只能登陆一次，这将增加接收提醒的机会，甚至能够防止中间人攻击。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"> Do you want to disallow multiple uses of the same authentication</div><div class="line"></div><div class="line">token? This restricts you to one login about every 30s, but it increases</div><div class="line"></div><div class="line">your chances to notice or even prevent man-in-the-middle attacks (y/n)</div></pre></td></tr></table></figure>
+<p>输入y回车</p>
+</li>
+</ul>
+<ul>
+<li><p>时间容错设置</p>
+<p>意思是:默认情况下，密钥在30秒内有效，为了防止由于客户端与服务器时间偏移（时间相差太大）导致认证失败，google authenticator设计时间容错措施。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"> By default, tokens are good for 30 seconds. In order to compensate for</div><div class="line"></div><div class="line">possible time-skew between the client and the server, we allow an extra</div><div class="line"></div><div class="line">token before and after the current time. If you experience problems with</div><div class="line"></div><div class="line">poor time synchronization, you can increase the window from its default</div><div class="line"></div><div class="line">size of +-1min (window size of 3) to about +-4min (window size of</div><div class="line"></div><div class="line">17 acceptable tokens).</div><div class="line"></div><div class="line">Do you want to do so? (y/n)</div></pre></td></tr></table></figure>
+<p>这个可根据实际情况进行配置。</p>
+</li>
+</ul>
+<ul>
+<li><p>暴力破解防护</p>
+<p>意思是：在你的电脑存在暴力破解的情况下可开启身份认证次数限制模块，默认限制为：30秒内不超过三次登陆尝试。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"> If the computer that you are logging into isn&apos;t hardened against brute-force</div><div class="line"></div><div class="line">login attempts, you can enable rate-limiting for the authentication module.</div><div class="line"></div><div class="line">By default, this limits attackers to no more than 3 login attempts every 30s.</div><div class="line"></div><div class="line">Do you want to enable rate-limiting (y/n)</div></pre></td></tr></table></figure>
+<p>输入y回车</p>
+</li>
+</ul>
+<ul>
+<li><p>配置完成</p>
+<p>配置完成后会在home目录下生成一个权限为400的隐藏文件，如下图所示：</p>
+</li>
+</ul>
+<p> <img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/configfile.png" alt=""></p>
+<h3 id="配置运维密码"><a href="#配置运维密码" class="headerlink" title="配置运维密码"></a>配置运维密码</h3><ul>
+<li>打开微信小程序</li>
+</ul>
+<p>打开微信，依次点击发现，小程序</p>
+<p> <img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/lp.jpg" alt=""></p>
+<ul>
+<li><p>输入“运维密码”并搜索</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/search.jpg" alt=""></p>
+</li>
+</ul>
+<ul>
+<li><p>点击“运维密码”进入应用</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/search.jpg" alt=""></p>
+</li>
+</ul>
+<ul>
+<li><p>点击右下角二维码图标</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/button.png" alt=""></p>
+</li>
+</ul>
+<ul>
+<li>扫一扫配置google-authenticator时所生成的二维码</li>
+</ul>
+<ul>
+<li><p>点击确定添加场景</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/commit.jpg" alt=""></p>
+</li>
+</ul>
+<ul>
+<li><p>添加完成</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/adddone.jpg" alt=""></p>
+</li>
+</ul>
+<h3 id="配置SSH服务"><a href="#配置SSH服务" class="headerlink" title="配置SSH服务"></a>配置SSH服务</h3><ul>
+<li>添加认证模块</li>
+</ul>
+<p>在/etc/pam.d/sshd文件添加认证模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">echo &quot;auth required pam_google_authenticator.so&quot; &gt;&gt;/etc/pam.d/sshd</div></pre></td></tr></table></figure>
+<ul>
+<li>配置任何的密码认证</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">sed -i &apos;s/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g&apos; /etc/ssh/sshd_config</div></pre></td></tr></table></figure>
+<ul>
+<li>重启sshd服务</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">systemctl restart sshd.service</div></pre></td></tr></table></figure>
+<h2 id="测试登陆"><a href="#测试登陆" class="headerlink" title="测试登陆"></a>测试登陆</h2><p>以上配置完成基本上就搞定了，下面我们进行测试。</p>
+<h3 id="登陆测试"><a href="#登陆测试" class="headerlink" title="登陆测试"></a>登陆测试</h3><ul>
+<li>输入命令登陆主机</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">ssh root@10.112.2.3</div></pre></td></tr></table></figure>
+<ul>
+<li>首先输入服务器的密码,接着会让输入运维密码。</li>
+</ul>
+<p>运维密码可在小程序中查看。</p>
+<p> <img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/onetime.jpg" alt=""></p>
+<p>如下图：</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/logintest.png" alt=""></p>
+<p>我们可以看到，在登陆的时候，需要配合“运维密码”才能登陆服务器。</p>
+<ul>
+<li>公钥登陆测试</li>
+</ul>
+<p>如果使用公钥登陆呢？以上配置是不是也是需要配合运维密码才能登陆的，我们进行验证：</p>
+<ul>
+<li>首先，我们将本机的公钥复制到远程机器的authorized_keys文件中。 </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">ssh-copy-id root@10.112.2.3</div></pre></td></tr></table></figure>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/ssh-copy-id.png" alt=""></p>
+<ul>
+<li>登陆测试</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/logintest.png" alt=""></p>
+<p>我们可以看到，不需要输入任何密码，直接登陆到了系统。</p>
+<h3 id="结合运维密码配置增强型SSH安全选项"><a href="#结合运维密码配置增强型SSH安全选项" class="headerlink" title="结合运维密码配置增强型SSH安全选项"></a>结合运维密码配置增强型SSH安全选项</h3><p>针对上面公钥登陆的测试，如果还任我不是很安全，我们可以设定如下登陆场景：公钥+密码+运维密码，我们需要如何做呢？</p>
+<ul>
+<li>配置SSH公钥双因子</li>
+</ul>
+<p>修改/etc/ssh/sshd_config配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">echo &quot;AuthenticationMethods publickey,keyboard-interactive:pam&quot; &gt;&gt;/etc/ssh/sshd_config</div></pre></td></tr></table></figure>
+<ul>
+<li>重启SSH服务</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">systemctl restart sshd.service</div></pre></td></tr></table></figure>
+<ul>
+<li>登陆测试</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">ssh root@10.112.2.3</div></pre></td></tr></table></figure>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/pamssh.png" alt=""></p>
+<p>可以看到，登陆的时候是需要验证公钥，密码，及输入运维密码才能登陆到系统。</p>
+<ul>
+<li><p>没有密钥的情况下尝试登陆测试,如下图</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/nopublickey.png" alt=""></p>
+</li>
+</ul>
+<p>至此，本文结束，如有错误及不足欢迎指正。</p>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://blog.unixmen.cn/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/" data-id="cj0u93d5q0034xsh42atoe7vz" class="article-share-link">分享到</a><div class="tags"><a href="/tags/双因子认证/">双因子认证</a><a href="/tags/SSH安全加固/">SSH安全加固</a><a href="/tags/运维密码/">运维密码</a></div><div class="post-nav"><a href="/2017/03/20/潜伏7年的Linux内核漏洞CVE-2017-2636-可本地提权/" class="next">潜伏7年的Linux内核漏洞CVE-2017-2636 ,可本地提权</a></div><div data-thread-key="2017/03/29/通过运维密码实现Linux系统SSH双因子认证/" data-title="通过运维密码实现Linux系统SSH双因子认证" data-url="http://blog.unixmen.cn/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/" class="ds-share flat"><div class="ds-share-inline"><ul class="ds-share-icons-16"><li data-toggle="ds-share-icons-more"><a href="javascript:void(0);" class="ds-more">分享到：</a></li><li><a href="javascript:void(0);" data-service="weibo" class="ds-weibo">微博</a></li><li><a href="javascript:void(0);" data-service="qzone" class="ds-qzone">QQ空间</a></li><li><a href="javascript:void(0);" data-service="qqt" class="ds-qqt">腾讯微博</a></li><li><a href="javascript:void(0);" data-service="wechat" class="ds-wechat">微信</a></li></ul><div class="ds-share-icons-more"></div></div></div><div data-thread-key="2017/03/29/通过运维密码实现Linux系统SSH双因子认证/" data-title="通过运维密码实现Linux系统SSH双因子认证" data-url="http://blog.unixmen.cn/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/" data-author-key="1" class="ds-thread"></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.unixmen.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/">技术文档</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/">工具</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/安全/">安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/容器/">容器</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/虚拟化/">虚拟化</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/虚拟化/KVM/">KVM</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/漏洞/">漏洞</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/漏洞/安全/">安全</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Life/">生活</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/性能优化/" style="font-size: 15px;">性能优化</a> <a href="/tags/docker/" style="font-size: 15px;">docker</a> <a href="/tags/Trouble-shooting/" style="font-size: 15px;">Trouble shooting</a> <a href="/tags/容器配置/" style="font-size: 15px;">容器配置</a> <a href="/tags/git/" style="font-size: 15px;">git</a> <a href="/tags/git-command/" style="font-size: 15px;">git command</a> <a href="/tags/git-命令行/" style="font-size: 15px;">git 命令行</a> <a href="/tags/struts2/" style="font-size: 15px;">struts2</a> <a href="/tags/KVM/" style="font-size: 15px;">KVM</a> <a href="/tags/资源限制/" style="font-size: 15px;">资源限制</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/开篇/" style="font-size: 15px;">开篇</a> <a href="/tags/手机APP/" style="font-size: 15px;">手机APP</a> <a href="/tags/工具/" style="font-size: 15px;">工具</a> <a href="/tags/广告拦截/" style="font-size: 15px;">广告拦截</a> <a href="/tags/感恩/" style="font-size: 15px;">感恩</a> <a href="/tags/其他/" style="font-size: 15px;">其他</a> <a href="/tags/双因子认证/" style="font-size: 15px;">双因子认证</a> <a href="/tags/SSH安全加固/" style="font-size: 15px;">SSH安全加固</a> <a href="/tags/运维密码/" style="font-size: 15px;">运维密码</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/">通过运维密码实现Linux系统SSH双因子认证</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/20/潜伏7年的Linux内核漏洞CVE-2017-2636-可本地提权/">潜伏7年的Linux内核漏洞CVE-2017-2636 ,可本地提权</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/08/KVM实例资源限制/">KVM 实例资源限制</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/Struts-045-漏洞验证/">Struts-045 漏洞验证</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/关于Apache-Struts2（S2-045）漏洞情况的通报/">关于Apache Struts2（S2-045）漏洞情况的通报</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/06/广告拦截APPADclear-for-安卓-iOS/">广告拦截APP"AdClear" for 安卓/iOS</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/03/通过景安免费虚拟主机实现腾讯免费企业邮箱绑定自有域名登陆访问/">通过景安免费虚拟主机实现腾讯免费企业邮箱绑定自有域名登陆访问</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/02/Docker-私有仓库无法上传镜像的问题/">Docker 私有仓库无法上传镜像的问题</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/02/Docker配置Daocloud加速器/">Docker配置Daocloud加速器</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/02/Docker配置HTTP代理/">Docker配置HTTP代理</a></li></ul></div><div class="widget"><div class="comments-title"><i class="fa fa-comment-o"> 最近评论</i></div><div data-num-items="5" data-show-avatars="0" data-show-time="1" data-show-admin="0" data-excerpt-length="32" data-show-title="1" class="ds-recent-comments"></div></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="https://linux.cn/" title="Linux中国" target="_blank">Linux中国</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">© <a href="/." rel="nofollow">Netb2c's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="/css/jquery.fancybox.css?v=0.0.0"><script>var duoshuoQuery = {short_name:'unixmen'};
+(function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+</script><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

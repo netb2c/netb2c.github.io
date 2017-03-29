@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-03-29T01:09:13.000Z</updated>
+  <updated>2017-03-29T01:14:55.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -20,13 +20,10 @@
     <link href="http://blog.unixmen.cn/2017/03/29/%E9%80%9A%E8%BF%87%E8%BF%90%E7%BB%B4%E5%AF%86%E7%A0%81%E5%AE%9E%E7%8E%B0Linux%E7%B3%BB%E7%BB%9FSSH%E5%8F%8C%E5%9B%A0%E5%AD%90%E8%AE%A4%E8%AF%81/"/>
     <id>http://blog.unixmen.cn/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/</id>
     <published>2017-03-29T00:38:24.000Z</published>
-    <updated>2017-03-29T01:09:13.000Z</updated>
+    <updated>2017-03-29T01:14:55.000Z</updated>
     
-    <content type="html"><![CDATA[<p>#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证</p>
-<p>##关于本文</p>
-<p>本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”<a href="https://github.com/google/google-authenticator" target="_blank" rel="external">Google Authenticator</a>“实现Linux系统OpenSSH双因子认证对SSH进行安全加固。</p>
-<p>##前言/背景</p>
-<p>近来很多知名企业都出现了密码泄露，业内对多重认证的呼声也越来越高。</p>
+    <content type="html"><![CDATA[<h1 id="SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证"><a href="#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证" class="headerlink" title="SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证"></a>SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证</h1><h2 id="关于本文"><a href="#关于本文" class="headerlink" title="关于本文"></a>关于本文</h2><p>本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”<a href="https://github.com/google/google-authenticator" target="_blank" rel="external">Google Authenticator</a>“实现Linux系统OpenSSH双因子认证对SSH进行安全加固。</p>
+<h2 id="前言-背景"><a href="#前言-背景" class="headerlink" title="前言/背景"></a>前言/背景</h2><p>近来很多知名企业都出现了密码泄露，业内对多重认证的呼声也越来越高。</p>
 <h2 id="双因子认证"><a href="#双因子认证" class="headerlink" title="双因子认证"></a>双因子认证</h2><ul>
 <li>什么是双因子认证</li>
 </ul>
@@ -41,8 +38,7 @@
 </ul>
 </li>
 </ul>
-<p>##SSH双因子认证实现思路</p>
-<p>使用“运维密码”结合“Google身份验证器”及Linux系统“OpenSSH”双因子认证对SSH进行安全加固。</p>
+<h2 id="SSH双因子认证实现思路"><a href="#SSH双因子认证实现思路" class="headerlink" title="SSH双因子认证实现思路"></a>SSH双因子认证实现思路</h2><p>使用“运维密码”结合“Google身份验证器”及Linux系统“OpenSSH”双因子认证对SSH进行安全加固。</p>
 <ul>
 <li>关于Google 身份验证器</li>
 </ul>
@@ -51,8 +47,7 @@
 <li>关于运维密码</li>
 </ul>
 <p>Linux.中国社区长期接触互联网新技术的最前沿，洞察大势所趋，身兼新技术广泛传播及维护互联网安全的重任，以及方便运维及新技术的传播开发了运维密码小程序。</p>
-<p>##如何开始</p>
-<p>首先我们需要一些准备工作：</p>
+<h2 id="如何开始"><a href="#如何开始" class="headerlink" title="如何开始"></a>如何开始</h2><p>首先我们需要一些准备工作：</p>
 <ul>
 <li><p>一台运行着 OpenSSH 服务版本大于6.2的 Linux 主机</p>
 </li>
@@ -61,8 +56,7 @@
 <li><p>一台支持SSH登陆的终端</p>
 </li>
 </ul>
-<p>##在 Linux 系统中安装 Google 身份验证器</p>
-<p>第一步需要在运行着 OpenSSH 服务的 Linux 主机上安装 Google 身份验证器。按照如下步骤安装 Google 身份验证器及其PAM模块。</p>
+<h2 id="在-Linux-系统中安装-Google-身份验证器"><a href="#在-Linux-系统中安装-Google-身份验证器" class="headerlink" title="在 Linux 系统中安装 Google 身份验证器"></a>在 Linux 系统中安装 Google 身份验证器</h2><p>第一步需要在运行着 OpenSSH 服务的 Linux 主机上安装 Google 身份验证器。按照如下步骤安装 Google 身份验证器及其PAM模块。</p>
 <h3 id="用安装包安装-Google-身份验证器"><a href="#用安装包安装-Google-身份验证器" class="headerlink" title="用安装包安装 Google 身份验证器"></a>用安装包安装 Google 身份验证器</h3><p>如果你不想自己构建 Google 身份验证器，在几个 Linux 发行版上有已经编译好的安装包。安装包里面包含 Google 身份验证器 二进制程序和 PAM 模块。</p>
 <ul>
 <li>在 Ubuntu 上安装 Google 身份验证器：</li>
@@ -246,9 +240,7 @@
     
     <summary type="html">
     
-      &lt;p&gt;#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证&lt;/p&gt;
-&lt;p&gt;##关于本文&lt;/p&gt;
-&lt;p&gt;本文讲述了如果通过Linux.中国提供的微信小程序”运维密码”结合 Google身份验证器”&lt;a href=&quot;https://github.com/google/g
+      &lt;h1 id=&quot;SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证&quot;&gt;&lt;a href=&quot;#SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证&quot; class=&quot;headerlink&quot; title=&quot;SSH安全加固篇-通过运维密码实现Linux系统SSH双
     
     </summary>
     

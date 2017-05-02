@@ -1,0 +1,199 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="Life &amp; Work Essays."><title>Docker私有镜像仓库节点部署 | Netb2c's Blog</title><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/5.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/grids-responsive-min.css"><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><link rel="alternate" type="application/atom+xml" href="/atom.xml"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Docker私有镜像仓库节点部署</h1><a id="logo" href="/.">Netb2c's Blog</a><p class="description">We'd better struggle for the future rather than regret for the past.</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Docker私有镜像仓库节点部署</h1><div class="post-meta">May 2, 2017<span> | </span><span class="category"><a href="/categories/技术文档/">技术文档</a><a href="/categories/技术文档/Tools/">工具</a><a href="/categories/技术文档/Tools/容器/">容器</a><a href="/categories/技术文档/Tools/容器/Docker私有仓库/">Docker私有仓库</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> Hits</span></span></div><a data-thread-key="2017/05/02/Docker私有镜像仓库节点部署/" href="/2017/05/02/Docker私有镜像仓库节点部署/#comments" class="ds-thread-count"></a><div class="post-content"><p>[toc]</p>
+<p>#私有镜像仓库节点部署</p>
+<h2 id="关于本文"><a href="#关于本文" class="headerlink" title="关于本文"></a>关于本文</h2><p>本文简介生产环境中私有镜像仓库节点的部署及自定义环境配置。</p>
+<h2 id="硬件要求"><a href="#硬件要求" class="headerlink" title="硬件要求"></a>硬件要求</h2><p>生产环境中要安装或升级容器私有镜像仓库节点，需要硬件必须满足下列要求：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>最小</th>
+<th>推荐</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>1 core</td>
+<td>大于4 core</td>
+<td></td>
+</tr>
+<tr>
+<td>内存</td>
+<td>1 GB</td>
+<td>大于32 GB</td>
+<td></td>
+</tr>
+<tr>
+<td>磁盘</td>
+<td>5 GB</td>
+<td>大于120 GB</td>
+<td>小于 5GB 仍然可以安装，Docker 对磁盘需求较大，要确保 Docker 的 Graph Dir(/var/lib/docker) 在较大磁盘分区上</td>
+</tr>
+<tr>
+<td>独立数据盘</td>
+<td>RHEL/CentOS 需要 &gt; 5GB 独立数据盘</td>
+<td>RHEL/CentOS 需要 &gt;30GB 独立数据盘</td>
+<td>需要使用 devicemapper 的 direct-lvm 模式</td>
+</tr>
+<tr>
+<td>网络</td>
+<td>所有节点互通</td>
+<td>所有节点互通, ping &lt;1ms</td>
+<td>至少两块网卡</td>
+</tr>
+</tbody>
+</table>
+<p>##系统要求</p>
+<p>系统推荐：CentOS 7.2 </p>
+<p>内核推荐：大于3.10</p>
+<p>注：默认第一块网卡为内网</p>
+<h2 id="时间同步"><a href="#时间同步" class="headerlink" title="时间同步"></a>时间同步</h2><ul>
+<li><p>安装ntpd服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum install ntp</div></pre></td></tr></table></figure>
+</li>
+<li><p>与上游ntp服务器进行时间同步</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ntpdate 10.154.88.88</div></pre></td></tr></table></figure>
+</li>
+<li><p>配置ntp服务配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sed -i &apos;s/0.centos.pool.ntp.org iburst/10.154.88.88/g&apos;  /etc/ntp.conf</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动ntpd服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">systemctl enable ntpd</div><div class="line">systemctl start ntpd</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="配置本地存储"><a href="#配置本地存储" class="headerlink" title="配置本地存储"></a>配置本地存储</h2><p>为方便后期维护管理，采用LVM对本地存储进行管理</p>
+<ul>
+<li><p>创建PV</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pvcreate /dev/sdb</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建VG</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vgcreate data /dev/sdb</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建LV</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lvcreate -L 500G data -n docker_data</div></pre></td></tr></table></figure>
+</li>
+<li><p>格式化新分区</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mkfs.xft /dev/data/docker_data</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>##系统更新</p>
+<p>为了提供更稳定的基础环境，建议对宿主机的底层环境进行更新升级。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum update -y</div></pre></td></tr></table></figure></p>
+<p>##安装容器服务</p>
+<ul>
+<li><p>卸载系统默认（版本较老的）Docker环境包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">yum -y remove docker docker-common container-selinux</div><div class="line">yum -y remove docker-selinux</div></pre></td></tr></table></figure>
+</li>
+<li><p>配置官方软件仓库源</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">yum install -y yum-utils</div><div class="line">yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</div></pre></td></tr></table></figure>
+</li>
+<li><p>更新本地缓存</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum makecache fast</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看软件包信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum list docker-ce.x86_64  --showduplicates |sort -r</div></pre></td></tr></table></figure>
+</li>
+<li><p>安装Docker engine社区版</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">yum -y install docker-ce</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="本地容器服务配置"><a href="#本地容器服务配置" class="headerlink" title="本地容器服务配置"></a>本地容器服务配置</h2><ul>
+<li><p>启动容器服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl start docker</div></pre></td></tr></table></figure>
+</li>
+<li><p>设置开机启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl enable docker</div></pre></td></tr></table></figure>
+</li>
+<li><p>设置容器数据存储路径</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">systemctl stop docker</div><div class="line">mv /var/lib/docker&#123;,.bak&#125;</div><div class="line">mkdir /var/lib/docker</div><div class="line">mount /dev/data/docker_data /var/lib/docker</div><div class="line">echo &quot;/dev/data/docker_data   /var/lib/docker         xfs     defaults 1 0&quot; &gt;&gt;/etc/fstab</div></pre></td></tr></table></figure>
+</li>
+<li><p>配置加速器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://xxxxxxxxxx.m.daocloud.io</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动容器服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl start docker</div></pre></td></tr></table></figure>
+</li>
+<li><p>测试运行实例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run hello-world</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="创建私有镜像仓库镜像存放分区"><a href="#创建私有镜像仓库镜像存放分区" class="headerlink" title="创建私有镜像仓库镜像存放分区"></a>创建私有镜像仓库镜像存放分区</h2><ul>
+<li><p>创建LV</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">lvcreate -L 2000G data -n registry_data</div></pre></td></tr></table></figure>
+</li>
+<li><p>格式化新分区</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mkfs.xft /dev/data/registry_data</div></pre></td></tr></table></figure>
+</li>
+<li><p>挂载新分区</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mount  /dev/data/registry_data /data/docker/registry/</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改系统启动挂载分区</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">echo &quot;/dev/data/registry_data  /data/registry_data         xfs     defaults 1 0&quot; &gt;&gt;/etc/fstab</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="启动私有镜像仓库"><a href="#启动私有镜像仓库" class="headerlink" title="启动私有镜像仓库"></a>启动私有镜像仓库</h2><p>registry 是Docker官方提供的私有镜像仓库工具，可以用于构建私有的镜像仓库</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 5000:5000 -v /data/docker/registry/:/var/lib/registry registry:latest</div></pre></td></tr></table></figure>
+<h2 id="私有镜像仓库测试"><a href="#私有镜像仓库测试" class="headerlink" title="私有镜像仓库测试"></a>私有镜像仓库测试</h2><ul>
+<li>查看本地镜像<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@docker-registry ~]# docker images</div><div class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">busybox             latest              00f017a8c2a6        2 weeks ago         1.11 MB</div><div class="line">registry            latest              047218491f8c        2 weeks ago         33.2 MB</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>可以看到，本机共有两个容器镜像，分别是：registry和busybox</p>
+<ul>
+<li><p>重新标记一个本地镜像为私有仓库的版本，这里将本地的busybox标记为本地IP:5000/busybox</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker tag busybox 10.82.2.103:5000/busybox</div></pre></td></tr></table></figure>
+</li>
+<li><p>再次查看本地镜像<br>再次查看镜像可以看到多了一个标记为10.82.2.103:5000/busybox的镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[root@docker-registry ~]# docker images</div><div class="line">REPOSITORY                  TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">10.82.2.103:5000/busybox   latest              00f017a8c2a6        2 weeks ago         1.11 MB</div><div class="line">busybox                     latest              00f017a8c2a6        2 weeks ago         1.11 MB</div><div class="line">registry                    latest              047218491f8c        2 weeks ago         33.2 MB</div></pre></td></tr></table></figure>
+</li>
+<li><p>将本地镜像推送到本地仓库中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker push 10.82.2.103:5000/busybox</div></pre></td></tr></table></figure>
+</li>
+<li><p>推送过程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">[root@docker-registry ~]# docker push 10.82.2.103:5000/busybox</div><div class="line">The push refers to a repository [10.82.2.103:5000/busybox]</div><div class="line">c0de73ac9968: Pushed </div><div class="line">latest: digest: sha256:68effe31a4ae8312e47f54bec52d1fc925908009ce7e6f734e1b54a4169081c5 size: 527</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看本地仓库中的镜像列表</p>
+<blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl  10.82.2.103:5000/v2/busybox/tags/list</div></pre></td></tr></table></figure>
+</blockquote>
+</li>
+</ul>
+<p>结果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;&quot;name&quot;:&quot;busybox&quot;,&quot;tags&quot;:[&quot;latest&quot;]&#125;</div></pre></td></tr></table></figure></p>
+<ul>
+<li><p>删除本地busybox镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[root@docker-registry ~]# docker rmi busybox</div><div class="line">Untagged: busybox:latest</div><div class="line">Untagged: busybox@sha256:32f093055929dbc23dec4d03e09dfe971f5973a9ca5cf059cbfb644c206aa83f</div><div class="line">[root@docker-registry ~]# docker images</div><div class="line">REPOSITORY                  TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">10.82.2.103:5000/busybox   latest              00f017a8c2a6        2 weeks ago         1.11 MB</div><div class="line">registry                    latest              047218491f8c        2 weeks ago         33.2 MB</div></pre></td></tr></table></figure>
+</li>
+<li><p>从私有仓库拉取镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[root@docker-registry ~]# docker pull 10.82.2.103:5000/busybox</div><div class="line">Using default tag: latest</div><div class="line">latest: Pulling from busybox</div><div class="line">Digest: sha256:68effe31a4ae8312e47f54bec52d1fc925908009ce7e6f734e1b54a4169081c5</div><div class="line">Status: Image is up to date for 10.82.2.103:5000/busybox:latest</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>可以看到成功获取私有仓库中的镜像</p>
+<ul>
+<li><p>尝试从私有镜像仓库中拉取的镜像启动容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[root@docker-registry ~]# docker run -i -t 10.82.2.103:5000/busybox </div><div class="line">/ # hostname </div><div class="line">11ea9195246f</div><div class="line">/ # hostid </div><div class="line">11ac0300</div><div class="line">/ #</div></pre></td></tr></table></figure>
+</li>
+<li><p>在其他容器计算节点上进行测试<br>测试内容包括：拉取私有镜像仓库中的镜像、在容器计算节点上查看所拉取的镜像、从私有镜像仓库中拉取的镜像启动容器。</p>
+<ul>
+<li><p>拉取私有镜像仓库中的镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">[I] $ docker pull 10.82.2.103:5000/busybox</div><div class="line">Using default tag: latest</div><div class="line">latest: Pulling from busybox</div><div class="line">04176c8b224a: Pull complete </div><div class="line">Digest: sha256:68effe31a4ae8312e47f54bec52d1fc925908009ce7e6f734e1b54a4169081c5</div><div class="line">Status: Downloaded newer image for 10.82.2.103:5000/busybox:latest</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看拉取的镜像</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">[I] $ docker images</div><div class="line">REPOSITORY                  TAG                 IMAGE ID            CREATED             SIZE</div><div class="line">10.82.2.103:5000/busybox   latest              00f017a8c2a6        13 days ago         1.11 MB</div><div class="line">ubuntu                      latest              4ca3a192ff2a        3 months ago        128.2 MB</div><div class="line">centos                      latest              0584b3d2cf6d        4 months ago        196.5 MB</div><div class="line">registry                    latest              c9bd19d022f6        5 months ago        33.27 MB</div><div class="line">[I] $ sudo ip add |grep 192</div><div class="line">    inet 192.168.66.3/24 brd 192.168.66.255 scope global enp0s25</div><div class="line">    inet 192.168.66.4/24 brd 192.168.66.255 scope global wlp3s0</div></pre></td></tr></table></figure>
+</li>
+<li><p>从私有镜像仓库中拉取的镜像启动容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">[I] $ sudo ip add |grep 192</div><div class="line">    inet 192.168.66.3/24 brd 192.168.66.255 scope global enp0s25</div><div class="line">    inet 192.168.66.4/24 brd 192.168.66.255 scope global wlp3s0</div><div class="line">[I] $ docker run -i -t 10.82.2.103:5000/busybox</div><div class="line">/ # hostname &amp;&amp;hostid</div><div class="line">4ed4430a0b8d</div><div class="line">11ac0200</div><div class="line">/ #</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>可以看到可以正常启动容器</p>
+<p>至此，私有镜像仓库部署完成。</p>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://blog.unixmen.cn/2017/05/02/Docker私有镜像仓库节点部署/" data-id="cj27dd7w8000m27h4jaxjeb2m" class="article-share-link">分享到</a><div class="tags"><a href="/tags/docker/">docker</a><a href="/tags/容器/">容器</a><a href="/tags/容器私有仓库配置/">容器私有仓库配置</a><a href="/tags/Docker私有仓库/">Docker私有仓库</a></div><div class="post-nav"><a href="/2017/05/02/git介绍/" class="next">Git 介绍</a></div><div data-thread-key="2017/05/02/Docker私有镜像仓库节点部署/" data-title="Docker私有镜像仓库节点部署" data-url="http://blog.unixmen.cn/2017/05/02/Docker私有镜像仓库节点部署/" class="ds-share flat"><div class="ds-share-inline"><ul class="ds-share-icons-16"><li data-toggle="ds-share-icons-more"><a href="javascript:void(0);" class="ds-more">分享到：</a></li><li><a href="javascript:void(0);" data-service="weibo" class="ds-weibo">微博</a></li><li><a href="javascript:void(0);" data-service="qzone" class="ds-qzone">QQ空间</a></li><li><a href="javascript:void(0);" data-service="qqt" class="ds-qqt">腾讯微博</a></li><li><a href="javascript:void(0);" data-service="wechat" class="ds-wechat">微信</a></li></ul><div class="ds-share-icons-more"></div></div></div><div data-thread-key="2017/05/02/Docker私有镜像仓库节点部署/" data-title="Docker私有镜像仓库节点部署" data-url="http://blog.unixmen.cn/2017/05/02/Docker私有镜像仓库节点部署/" data-author-key="1" class="ds-thread"></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://blog.unixmen.cn"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/">技术文档</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/">工具</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/git/">git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/安全/">安全</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/容器/">容器</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/容器/Docker私有仓库/">Docker私有仓库</a></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/虚拟化/">虚拟化</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/Tools/虚拟化/KVM/">KVM</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/漏洞/">漏洞</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/技术文档/漏洞/安全/">安全</a></li></ul></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Life/">生活</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/性能优化/" style="font-size: 15px;">性能优化</a> <a href="/tags/docker/" style="font-size: 15px;">docker</a> <a href="/tags/容器配置/" style="font-size: 15px;">容器配置</a> <a href="/tags/容器私有仓库配置/" style="font-size: 15px;">容器私有仓库配置</a> <a href="/tags/Docker私有仓库/" style="font-size: 15px;">Docker私有仓库</a> <a href="/tags/git/" style="font-size: 15px;">git</a> <a href="/tags/Trouble-shooting/" style="font-size: 15px;">Trouble shooting</a> <a href="/tags/git-command/" style="font-size: 15px;">git command</a> <a href="/tags/git-命令行/" style="font-size: 15px;">git 命令行</a> <a href="/tags/KVM/" style="font-size: 15px;">KVM</a> <a href="/tags/资源限制/" style="font-size: 15px;">资源限制</a> <a href="/tags/容器/" style="font-size: 15px;">容器</a> <a href="/tags/开篇/" style="font-size: 15px;">开篇</a> <a href="/tags/struts2/" style="font-size: 15px;">struts2</a> <a href="/tags/感恩/" style="font-size: 15px;">感恩</a> <a href="/tags/手机APP/" style="font-size: 15px;">手机APP</a> <a href="/tags/工具/" style="font-size: 15px;">工具</a> <a href="/tags/广告拦截/" style="font-size: 15px;">广告拦截</a> <a href="/tags/其他/" style="font-size: 15px;">其他</a> <a href="/tags/双因子认证/" style="font-size: 15px;">双因子认证</a> <a href="/tags/SSH安全加固/" style="font-size: 15px;">SSH安全加固</a> <a href="/tags/运维密码/" style="font-size: 15px;">运维密码</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2017/05/02/Docker私有镜像仓库节点部署/">Docker私有镜像仓库节点部署</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/05/02/git介绍/">Git 介绍</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/05/02/Fedora安装Haroopad/">Fedora安装Haroopad</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/05/02/如何在Fedora中安装pip2或pip3/">如何在Fedora中安装pip2或pip3</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/29/通过运维密码实现Linux系统SSH双因子认证/">SSH安全加固篇-通过运维密码实现Linux系统SSH双因子认证</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/20/潜伏7年的Linux内核漏洞CVE-2017-2636-可本地提权/">潜伏7年的Linux内核漏洞CVE-2017-2636 ,可本地提权</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/08/KVM实例资源限制/">KVM 实例资源限制</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/Struts-045-漏洞验证/">Struts-045 漏洞验证</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/07/关于Apache-Struts2（S2-045）漏洞情况的通报/">关于Apache Struts2（S2-045）漏洞情况的通报</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/03/06/广告拦截APPADclear-for-安卓-iOS/">广告拦截APP"AdClear" for 安卓/iOS</a></li></ul></div><div class="widget"><div class="comments-title"><i class="fa fa-comment-o"> 最近评论</i></div><div data-num-items="5" data-show-avatars="0" data-show-time="1" data-show-admin="0" data-excerpt-length="32" data-show-title="1" class="ds-recent-comments"></div></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="https://linux.cn/" title="Linux中国" target="_blank">Linux中国</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">© <a href="/." rel="nofollow">Netb2c's Blog.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="/css/jquery.fancybox.css?v=0.0.0"><script>var duoshuoQuery = {short_name:'unixmen'};
+(function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+        || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+</script><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>

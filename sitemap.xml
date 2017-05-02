@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.unixmen.cn/2017/05/02/%E5%A6%82%E4%BD%95%E5%9C%A8Fedora%E4%B8%AD%E5%AE%89%E8%A3%85pip2%E6%88%96pip3/</loc>
+    
+    <lastmod>2017-05-02T10:09:26.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.unixmen.cn/2017/05/02/Fedora%E5%AE%89%E8%A3%85Haroopad/</loc>
     
-    <lastmod>2017-05-02T10:02:38.000Z</lastmod>
+    <lastmod>2017-05-02T10:08:43.000Z</lastmod>
     
   </url>
   
@@ -33,13 +40,6 @@
     <loc>http://blog.unixmen.cn/2017/02/28/Git%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/</loc>
     
     <lastmod>2017-05-02T09:24:59.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2017/05/02/%E5%A6%82%E4%BD%95%E5%9C%A8Fedora%E4%B8%AD%E5%AE%89%E8%A3%85pip2%E6%88%96pip3/</loc>
-    
-    <lastmod>2017-05-02T09:13:49.000Z</lastmod>
     
   </url>
   

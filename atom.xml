@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-05-09T08:17:46.000Z</updated>
+  <updated>2017-05-09T09:21:25.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -14,6 +14,70 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>英特尔AMT功能远程提权高危漏洞（CVE-2017-5689）分析</title>
+    <link href="http://blog.unixmen.cn/2017/05/09/%E8%8B%B1%E7%89%B9%E5%B0%94AMT%E5%8A%9F%E8%83%BD%E8%BF%9C%E7%A8%8B%E6%8F%90%E6%9D%83%E9%AB%98%E5%8D%B1%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2017-5689%EF%BC%89%E5%88%86%E6%9E%90/"/>
+    <id>http://blog.unixmen.cn/2017/05/09/英特尔AMT功能远程提权高危漏洞（CVE-2017-5689）分析/</id>
+    <published>2017-05-09T09:20:23.000Z</published>
+    <updated>2017-05-09T09:21:25.000Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="文章简述"><a href="#文章简述" class="headerlink" title="文章简述"></a>文章简述</h2><p>本文讲述英特尔AMT功能远程提权高危漏洞介绍，说明及漏洞验证及修复方法。</p>
+<h2 id="漏洞说明"><a href="#漏洞说明" class="headerlink" title="漏洞说明"></a>漏洞说明</h2><p>这款漏洞编号为CVE-2017-5689，能够影响到英特尔远程管理技术，包括Active Management Technology (AMT), Intel Standard Manageability(ISM)和Intel Small Business Technology (SBT)软件，版本号由6开始到11.6。如果你在电脑上看到过这些标志，那么你很有可能中招了。</p>
+<p>漏洞最先由Embedi 研究团队的MaksimMalyutin在二月中旬发现，发现后他立即提交给了英特尔安全团队。</p>
+<p>现在大部分系统管理员已经通过补丁更新了系统，Embedi决定披露<a href="https://embedi.com/news/what-you-need-know-about-intel-amt-vulnerability" target="_blank" rel="external">更多细节</a>。</p>
+<p>黑客能够通过发送空的验证字符串来劫持使用英特尔芯片的电脑，在了解其中的原理之前我们得先回答下面几个问题：</p>
+<blockquote>
+<p>什么是Intel AMT？<br>Intel AMT漏洞出现在哪里？<br>黑客怎样利用这个漏洞？</p>
+</blockquote>
+<h2 id="什么是Intel-AMT？"><a href="#什么是Intel-AMT？" class="headerlink" title="什么是Intel AMT？"></a>什么是Intel AMT？</h2><p>英特尔通过其 vPro 商务处理器平台提供了 Intel Active Management Technology(AMT)技术，这项技术能让IT管理人员远程管理和修复PC、工作站和服务器。</p>
+<p>这项预设的功能使用基于Web的控制页面，通过远程端口16992和16993让管理员远程管理系统。</p>
+<p>Intel AMT Web界面甚至可以在系统关机时运作，因为它集成在芯片中，所以可以独立于操作系统运作，只要机器连接了电源和网线。</p>
+<h2 id="Intel-AMT漏洞出现在哪里？"><a href="#Intel-AMT漏洞出现在哪里？" class="headerlink" title="Intel AMT漏洞出现在哪里？"></a>Intel AMT漏洞出现在哪里？</h2><p>为了防止功能被未授权的用户滥用，AMT服务会使用HTTP摘要认证和Kerberos验证机制。</p>
+<p>权限提升漏洞就出现在Intel AMT Web界面通过HTTP摘要认证协议认证用户的环节，这是个基于挑战/应答(Challenge/Response)方式的身份认证系统。</p>
+<p>在解释漏洞之前我们先了解一下摘要认证的原理，摘要认证包含以下这些步骤：</p>
+<blockquote>
+<p>用户先发起一个没有认证证书的登陆请求，作为响应，服务器回复一个随机数（称作”nonce“）、HTTP方法以及请求的URI。<br>接下来用户就会被提示输入用户名和密码。<br>输入后，客户端就会发送一个加密的字符串(user_response)，字符串是使用一个单向的加密函数生成的一个消息摘要（message digest），该摘要由用户名、密码、给定的nonce值、HTTP方法，以及所请求的URI生成。<br>而服务器端也会通过数据库中的用户名密码计算一个类似的加密字符串(computed_response)。<br>服务器使用strncmp()函数对两个字符串进行比较，如果二者相符就会让用户登陆Intel AMT Web界面。</p>
+</blockquote>
+<p>而Intel AMT漏洞正是出现在strncmp()函数中。</p>
+<p>语法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">strncmp (string_1, string_2 , length)</div></pre></td></tr></table></figure></p>
+<p>其中length参数定义了多少个字符会被比较</p>
+<p>Strncmp()是一个二进制安全字符串比较函数，所谓二进制安全就是指在一个二进制文件上所执行的不更改文件内容的功能或者操作，其本质上将操作输入作为原始的、无任何特殊格式意义的数据流。函数的返回值包括负整数，0和正整数，取决于string_1是否比string_2大，如果二者相等，则返回0。</p>
+<p>存在问题的代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">if(strncmp(computed_response, user_response, response_length))</div><div class="line">exit(0x99);</div></pre></td></tr></table></figure></p>
+<p>很明显，要认证成功，变量user_response的值必须等于computed_response，因此无论长度如何，strncmp()函数的返回值必须为0。</p>
+<p>但是写这段代码的程序员错误地吧user_response的长度放到了strncmp()函数中，而非computed_response。</p>
+<h2 id="黑客如何利用？"><a href="#黑客如何利用？" class="headerlink" title="黑客如何利用？"></a>黑客如何利用？</h2><p>要想利用漏洞，未经授权的用户只需要发送空的user_response值。</p>
+<p>由于strncmp()错误地用user_response变量来认证用户，因此，发送null值就会让比较很熟认为user_response与computed_response相等，从而通过验证。</p>
+<p>攻击示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">GET /index.htm HTTP/1.1</div><div class="line">Host: 127.0.0.1:16992</div><div class="line">User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101</div><div class="line">Firefox/45.0</div><div class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</div><div class="line">Accept-Language: en-US,en;q=0.5</div><div class="line">Accept-Encoding: gzip, deflate</div><div class="line">Connection: keep-alive</div><div class="line">HTTP/1.1 401 Unauthorized</div><div class="line">WWW-Authenticate: Digest</div><div class="line">realm=»Digest:048A0000000000000000000000000000»,</div><div class="line">nonce=»qTILAAUFAAAjY7rDwLSmxFCq5EJ3pH/n»,stale=»false»,qop=»auth»</div><div class="line">Content-Type: text/html</div><div class="line">Server: AMT</div><div class="line">Content-Length: 678</div><div class="line">Connection: close</div><div class="line">GET /index.htm HTTP/1.1</div><div class="line">Host: 127.0.0.1:16992</div><div class="line">User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101</div><div class="line">Firefox/45.0</div><div class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</div><div class="line">Accept-Language: en-US,en;q=0.5</div><div class="line">Accept-Encoding: gzip, deflate</div><div class="line">Connection: keep-alive</div><div class="line">Authorization: Digest username=»admin»,</div><div class="line">realm=»Digest:048A0000000000000000000000000000»,</div><div class="line">nonce=»qTILAAUFAAAjY7rDwLSmxFCq5EJ3pH/n», uri=»/index.htm», response=»»,</div><div class="line">qop=auth, nc=00000001, cnonce=»60513ab58858482c»</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Date: Thu, 4 May 2017 16:09:17 GMT</div><div class="line">Server: AMT</div><div class="line">Content-Type: text/html</div><div class="line">Transfer-Encoding: chunked</div><div class="line">Cache-Control: no cache</div><div class="line">Expires: Thu, 26 Oct 1995 00:00:00 GMT</div><div class="line">04E6</div></pre></td></tr></table></figure>
+<h2 id="漏洞危害"><a href="#漏洞危害" class="headerlink" title="漏洞危害"></a>漏洞危害</h2><p>攻击者还可以使用Keyboard Video Mouse (KVM)功能，这个功能内置在Intel AMT Web控制平台中，KVM能够让系统管理员远程控制系统，能够执行的操作包括：</p>
+<blockquote>
+<p>“[攻击者]可以远程加载执行任意程序，读写文件（使用常规的文件管理器）” ，研究人员在<a href="https://www.embedi.com/files/white-papers/Silent-Bob-is-Silent.pdf" target="_blank" rel="external">论文</a>中写道，“使用IDE-R (IDERedirection)，黑客还可以远程更改启动设备，比如吧其他虚拟镜像作为启动设备。”<br>“使用SOL (Serial over LAN), [攻击者]能够远程开关机/重启/重置系统，还可以对BIOS选项进行编辑。”<br>也就是说，黑客可以做任何事情，可以登陆机器、执行恶意活动，包括修改系统和安装那些无法检测的恶意软件。</p>
+</blockquote>
+<h2 id="升级固件修复系统"><a href="#升级固件修复系统" class="headerlink" title="升级固件修复系统"></a>升级固件修复系统</h2><p>漏洞影响的英特尔管理固件版本包括6.x, 7.x, 8.x 9.x, 10.x, 11.0,11.5和11.6，不过在6以前和11.6以后的版本则不受影响。</p>
+<p>英特尔已经将漏洞评级为高危，并且发布了<a href="https://security-center.intel.com/advisory.aspx?intelid=INTEL-SA-00075&amp;languageid=en-fr" target="_blank" rel="external">新的固件版本</a>。于此同时，英特尔还发布了一些指导文件，<a href="https://communities.intel.com/docs/DOC-5693" target="_blank" rel="external">一份</a>用于检测工作站是否运行了AMT, ISM或SBT，<a href="https://downloadcenter.intel.com/download/26755" target="_blank" rel="external">一份</a>用于检测系统是否存在漏洞，还有针对不能立即升级的企业的<a href="https://downloadcenter.intel.com/download/26754" target="_blank" rel="external">修复指导</a>。</p>
+<p>研究员Bart Blaze在GitHub上也发布了一款简单的<a href="https://github.com/bartblaze/Disable-Intel-AMT" target="_blank" rel="external">修复工具</a>，基于英特尔的指导文件制作。</p>
+<p>Cerberus Security在GitHub上也发布了一款<a href="https://github.com/CerberusSecurity/CVE-2017-5689" target="_blank" rel="external">检测AMT漏洞脚本</a>,基于python语言。</p>
+<p>受影响的用户只需要下载运行其中的DisableAMT.exe，这个文件会关闭Windows操作系统（x86和x64系统）中的AMT功能。<br><img src="https://camo.githubusercontent.com/07696e4d295aacfaf19fa651c467cc783cbb79d7/687474703a2f2f692e696d6775722e636f6d2f6534444d5845562e706e67" alt=""></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;文章简述&quot;&gt;&lt;a href=&quot;#文章简述&quot; class=&quot;headerlink&quot; title=&quot;文章简述&quot;&gt;&lt;/a&gt;文章简述&lt;/h2&gt;&lt;p&gt;本文讲述英特尔AMT功能远程提权高危漏洞介绍，说明及漏洞验证及修复方法。&lt;/p&gt;
+&lt;h2 id=&quot;漏洞说明&quot;&gt;&lt;a href
+    
+    </summary>
+    
+      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
+    
+      <category term="漏洞" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/"/>
+    
+      <category term="安全" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="Intel AMT 漏洞" scheme="http://blog.unixmen.cn/tags/Intel-AMT-%E6%BC%8F%E6%B4%9E/"/>
+    
+  </entry>
   
   <entry>
     <title>Shell实时命令历史记录</title>
@@ -73,10 +137,9 @@
     <link href="http://blog.unixmen.cn/2017/05/05/PHPMailer%E6%9B%9D%E8%BF%9C%E7%A8%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E9%AB%98%E5%8D%B1%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2016-10033%EF%BC%89/"/>
     <id>http://blog.unixmen.cn/2017/05/05/PHPMailer曝远程代码执行高危漏洞（CVE-2016-10033）/</id>
     <published>2017-05-05T01:33:21.000Z</published>
-    <updated>2017-05-05T01:50:56.000Z</updated>
+    <updated>2017-05-09T08:26:20.000Z</updated>
     
-    <content type="html"><![CDATA[<p>##【2017.5.4更新】</p>
-<p>昨天曝出了两个比较热门的漏洞，一个是CVE-2016-10033，另一个则为CVE-2017-8295。从描述来看，前者是WordPress Core 4.6一个未经授权的RCE漏洞。不过实际上，这就是去年12月份FreeBuf已经报道的漏洞，因此我们在原文基础上进行更新。</p>
+    <content type="html"><![CDATA[<h2 id="【2017-5-4更新】"><a href="#【2017-5-4更新】" class="headerlink" title="【2017.5.4更新】"></a>【2017.5.4更新】</h2><p>昨天曝出了两个比较热门的漏洞，一个是CVE-2016-10033，另一个则为CVE-2017-8295。从描述来看，前者是WordPress Core 4.6一个未经授权的RCE漏洞。不过实际上，这就是去年12月份FreeBuf已经报道的漏洞，因此我们在原文基础上进行更新。</p>
 <p>这次漏洞公告就是PHPMailer漏洞利用细节在WordPress核心中的实现。未经授权的攻击者利用漏洞就能实现远程代码执行，针对目标服务器实现即时访问，最终导致目标应用服务器的完全陷落。无需插件或者非标准设置，就能利用该漏洞。实际上Wordfence当时就曾经提到过该漏洞影响到了WP Core。</p>
 <p>最新的这则公告提到了PHP mail()函数的新利用向量，可在MTA – Exim4之上利用该漏洞，Exim在如Debian或Ubuntu等系统中都是默认安装的。这样一来也就增加了此类攻击的范围和漏洞的严重性。具体为利用host字段注入了恶意数据，进入到了mail函数，再利用sendmail (实际上是软连接到的exim4)命令的-be 参数来执行命令。</p>
 <p>之所以到现在才公布这部分细节，是期望给予WordPress和其它收到影响的软件提供商更多时间来升级受影响的Mail库。除此之外，也是针对CVE-2017-8295漏洞留出更多的修复时间。</p>
@@ -118,8 +181,7 @@
     
     <summary type="html">
     
-      &lt;p&gt;##【2017.5.4更新】&lt;/p&gt;
-&lt;p&gt;昨天曝出了两个比较热门的漏洞，一个是CVE-2016-10033，另一个则为CVE-2017-8295。从描述来看，前者是WordPress Core 4.6一个未经授权的RCE漏洞。不过实际上，这就是去年12月份FreeBuf已
+      &lt;h2 id=&quot;【2017-5-4更新】&quot;&gt;&lt;a href=&quot;#【2017-5-4更新】&quot; class=&quot;headerlink&quot; title=&quot;【2017.5.4更新】&quot;&gt;&lt;/a&gt;【2017.5.4更新】&lt;/h2&gt;&lt;p&gt;昨天曝出了两个比较热门的漏洞，一个是CVE-2016-100
     
     </summary>
     
@@ -1440,312 +1502,6 @@
     
     
       <category term="git" scheme="http://blog.unixmen.cn/tags/git/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Git常用命令</title>
-    <link href="http://blog.unixmen.cn/2017/02/28/Git%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"/>
-    <id>http://blog.unixmen.cn/2017/02/28/Git常用命令/</id>
-    <published>2017-02-28T03:24:49.000Z</published>
-    <updated>2017-05-02T09:24:59.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>[toc]</p>
-<h1 id="Git常用命令"><a href="#Git常用命令" class="headerlink" title="Git常用命令"></a>Git常用命令</h1><p>Git 命令行操作工作流程</p>
-<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/gitcommand.png" alt=""></p>
-<ul>
-<li>Workspace：工作区</li>
-<li>Index / Stage：暂存区</li>
-<li>Repository：仓库区（或本地仓库）</li>
-<li>Remote：远程仓库</li>
-</ul>
-<h2 id="一、新建代码库"><a href="#一、新建代码库" class="headerlink" title="一、新建代码库"></a>一、新建代码库</h2><ul>
-<li><p>在当前目录新建一个Git代码库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git init</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个目录，将其初始化为Git代码库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git init [project-name]</div></pre></td></tr></table></figure>
-</li>
-<li><p>下载一个项目和它的整个代码历史</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git clone [url]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="二、配置"><a href="#二、配置" class="headerlink" title="二、配置"></a>二、配置</h2><p>Git的设置文件为.gitconfig，它可以在用户主目录下（全局配置），也可以在项目目录下（项目配置）。</p>
-<ul>
-<li><p>显示当前的Git配置</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git config --list</div></pre></td></tr></table></figure>
-</li>
-<li><p>编辑Git配置文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git config -e [--global]</div></pre></td></tr></table></figure>
-</li>
-<li><p>设置提交代码时的用户信息</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git config [--global] user.name &quot;[name]&quot;</div><div class="line">git config [--global] user.email &quot;[email address]&quot;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="三、增加-删除文件"><a href="#三、增加-删除文件" class="headerlink" title="三、增加/删除文件"></a>三、增加/删除文件</h2><ul>
-<li><p>添加指定文件到暂存区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git add [file1] [file2] ...</div></pre></td></tr></table></figure>
-</li>
-<li><p>添加指定目录到暂存区，包括子目录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git add [dir]</div></pre></td></tr></table></figure>
-</li>
-<li><p>添加当前目录的所有文件到暂存区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git add .</div></pre></td></tr></table></figure>
-</li>
-<li><p>添加每个变化前，都会要求确认,对于同一个文件的多处变化，可以实现分次提交</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git add -p</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除工作区文件，并且将这次删除放入暂存区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git rm [file1] [file2] ...</div></pre></td></tr></table></figure>
-</li>
-<li><p>停止追踪指定文件，但该文件会保留在工作区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git rm --cached [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>改名文件，并且将这个改名放入暂存区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git mv [file-original] [file-renamed]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="四、代码提交"><a href="#四、代码提交" class="headerlink" title="四、代码提交"></a>四、代码提交</h2><ul>
-<li><p>提交暂存区到仓库区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git commit -m [message]</div></pre></td></tr></table></figure>
-</li>
-<li><p>提交暂存区的指定文件到仓库区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git commit [file1] [file2] ... -m [message]</div></pre></td></tr></table></figure>
-</li>
-<li><p>提交工作区自上次commit之后的变化，直接到仓库区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git commit -a</div></pre></td></tr></table></figure>
-</li>
-<li><p>提交时显示所有diff信息</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git commit -v</div></pre></td></tr></table></figure>
-</li>
-<li><p>使用一次新的commit，替代上一次提交, 如果代码没有任何新变化，则用来改写上一次commit的提交信息</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git commit --amend -m [message]</div></pre></td></tr></table></figure>
-</li>
-<li><p>重做上一次commit，并包括指定文件的新变化</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git commit --amend [file1] [file2] ...</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="五、分支"><a href="#五、分支" class="headerlink" title="五、分支"></a>五、分支</h2><ul>
-<li><p>列出所有本地分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch</div></pre></td></tr></table></figure>
-</li>
-<li><p>列出所有远程分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch -r</div></pre></td></tr></table></figure>
-</li>
-<li><p>列出所有本地分支和远程分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch -a</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个分支，但依然停留在当前分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch [branch-name]</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个分支，并切换到该分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout -b [branch]</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个分支，指向指定commit</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch [branch] [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个分支，与指定的远程分支建立追踪关系</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch --track [branch] [remote-branch]</div></pre></td></tr></table></figure>
-</li>
-<li><p>切换到指定分支，并更新工作区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout [branch-name]</div></pre></td></tr></table></figure>
-</li>
-<li><p>切换到上一个分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout -</div></pre></td></tr></table></figure>
-</li>
-<li><p>建立追踪关系，在现有分支与指定的远程分支之间</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch --set-upstream [branch] [remote-branch]</div></pre></td></tr></table></figure>
-</li>
-<li><p>合并指定分支到当前分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git merge [branch]</div></pre></td></tr></table></figure>
-</li>
-<li><p>选择一个commit，合并进当前分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git cherry-pick [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git branch -d [branch-name]</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除远程分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git push origin --delete [branch-name]</div><div class="line">git branch -dr [remote/branch]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="六、标签"><a href="#六、标签" class="headerlink" title="六、标签"></a>六、标签</h2><ul>
-<li><p>列出所有tag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git tag</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个tag在当前commit</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git tag [tag]</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个tag在指定commit</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git tag [tag] [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除本地tag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git tag -d [tag]</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除远程tag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push origin :refs/tags/[tagName]</div></pre></td></tr></table></figure>
-</li>
-<li><p>查看tag信息</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git show [tag]</div></pre></td></tr></table></figure>
-</li>
-<li><p>提交指定tag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push [remote] [tag]</div></pre></td></tr></table></figure>
-</li>
-<li><p>提交所有tag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push [remote] --tags</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个分支，指向某个tag</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout -b [branch] [tag]</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="七、查看信息"><a href="#七、查看信息" class="headerlink" title="七、查看信息"></a>七、查看信息</h2><ul>
-<li><p>显示有变更的文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git status</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示当前分支的版本历史</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git log</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示commit历史，以及每次commit发生变更的文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git log --stat</div></pre></td></tr></table></figure>
-</li>
-<li><p>搜索提交历史，根据关键词</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git log -S [keyword]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示某个commit之后的所有变动，每个commit占据一行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git log [tag] HEAD --pretty=format:%s</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示某个commit之后的所有变动，其”提交说明”必须符合搜索条件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git log [tag] HEAD --grep feature</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示某个文件的版本历史，包括文件改名</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git log --follow [file]</div><div class="line">git whatchanged [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示指定文件相关的每一次diff</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git log -p [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示过去5次提交</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git log -5 --pretty --oneline</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示所有提交过的用户，按提交次数排序</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git shortlog -sn</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示指定文件是什么人在什么时间修改过</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git blame [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示暂存区和工作区的差异</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git diff</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示暂存区和上一个commit的差异</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git diff --cached [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示工作区与当前分支最新commit之间的差异</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git diff HEAD</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示两次提交之间的差异</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git diff [first-branch]...[second-branch]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示今天你写了多少行代码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git diff --shortstat &quot;@&#123;0 day ago&#125;&quot;</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示某次提交的元数据和内容变化</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git show [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示某次提交发生变化的文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git show --name-only [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示某次提交时，某个文件的内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git show [commit]:[filename]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示当前分支的最近几次提交</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git reflog</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="八、远程同步"><a href="#八、远程同步" class="headerlink" title="八、远程同步"></a>八、远程同步</h2><ul>
-<li><p>下载远程仓库的所有变动</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git fetch [remote]</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示所有远程仓库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git remote -v</div></pre></td></tr></table></figure>
-</li>
-<li><p>显示某个远程仓库的信息</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git remote show [remote]</div></pre></td></tr></table></figure>
-</li>
-<li><p>增加一个新的远程仓库，并命名</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git remote add [shortname] [url]</div></pre></td></tr></table></figure>
-</li>
-<li><p>取回远程仓库的变化，并与本地分支合并</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git pull [remote] [branch]</div></pre></td></tr></table></figure>
-</li>
-<li><p>上传本地指定分支到远程仓库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push [remote] [branch]</div></pre></td></tr></table></figure>
-</li>
-<li><p>强行推送当前分支到远程仓库，即使有冲突</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push [remote] --force</div></pre></td></tr></table></figure>
-</li>
-<li><p>推送所有分支到远程仓库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git push [remote] --all</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="九、撤销"><a href="#九、撤销" class="headerlink" title="九、撤销"></a>九、撤销</h2><ul>
-<li><p>恢复暂存区的指定文件到工作区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>恢复某个commit的指定文件到暂存区和工作区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout [commit] [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>恢复暂存区的所有文件到工作区</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git checkout .</div></pre></td></tr></table></figure>
-</li>
-<li><p>重置暂存区的指定文件，与上一次commit保持一致，但工作区不变</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git reset [file]</div></pre></td></tr></table></figure>
-</li>
-<li><p>重置暂存区与工作区，与上一次commit保持一致</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git reset --hard</div></pre></td></tr></table></figure>
-</li>
-<li><p>重置当前分支的指针为指定commit，同时重置暂存区，但工作区不变</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git reset [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git reset --hard [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>重置当前HEAD为指定commit，但保持暂存区和工作区不变</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git reset --keep [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>新建一个commit，用来撤销指定commit</p>
-</li>
-<li><p>后者的所有变化都将被前者抵消，并且应用到当前分支</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git revert [commit]</div></pre></td></tr></table></figure>
-</li>
-<li><p>暂时将未提交的变化移除，稍后再移入</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">git stash</div><div class="line">git stash pop</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="十、其他"><a href="#十、其他" class="headerlink" title="十、其他"></a>十、其他</h2><ul>
-<li>生成一个可供发布的压缩包<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git archive</div></pre></td></tr></table></figure>
-</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;[toc]&lt;/p&gt;
-&lt;h1 id=&quot;Git常用命令&quot;&gt;&lt;a href=&quot;#Git常用命令&quot; class=&quot;headerlink&quot; title=&quot;Git常用命令&quot;&gt;&lt;/a&gt;Git常用命令&lt;/h1&gt;&lt;p&gt;Git 命令行操作工作流程&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https:
-    
-    </summary>
-    
-      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
-    
-      <category term="工具" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/"/>
-    
-      <category term="git" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/git/"/>
-    
-    
-      <category term="git" scheme="http://blog.unixmen.cn/tags/git/"/>
-    
-      <category term="git command" scheme="http://blog.unixmen.cn/tags/git-command/"/>
-    
-      <category term="git 命令行" scheme="http://blog.unixmen.cn/tags/git-%E5%91%BD%E4%BB%A4%E8%A1%8C/"/>
     
   </entry>
   

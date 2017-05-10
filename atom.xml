@@ -68,10 +68,9 @@
     <link href="http://blog.unixmen.cn/2017/05/09/%E5%85%A8%E9%9D%A2%E6%8F%90%E5%8D%87BIND-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%89%E5%85%A8/"/>
     <id>http://blog.unixmen.cn/2017/05/09/全面提升BIND-DNS服务器安全/</id>
     <published>2017-05-09T10:37:54.000Z</published>
-    <updated>2017-05-10T09:47:10.000Z</updated>
+    <updated>2017-05-10T09:51:38.000Z</updated>
     
-    <content type="html"><![CDATA[<p>[toc]</p>
-<h2 id="文章简介"><a href="#文章简介" class="headerlink" title="文章简介"></a>文章简介</h2><p>本文介绍了当前互联网DNS服务器所存在的隐患（几种典型的DNS攻击方式）及安全加固</p>
+    <content type="html"><![CDATA[<h2 id="文章简介"><a href="#文章简介" class="headerlink" title="文章简介"></a>文章简介</h2><p>本文介绍了当前互联网DNS服务器所存在的隐患（几种典型的DNS攻击方式）及安全加固</p>
 <h2 id="DNS服务所面临的安全隐患"><a href="#DNS服务所面临的安全隐患" class="headerlink" title="DNS服务所面临的安全隐患"></a>DNS服务所面临的安全隐患</h2><p>互联网上DNS服务器的事实标准就是ISC的BIND，BillManning对in-addr域的调查发现，有95%的域名服务器(2的2000次方个服务器中)使用的是各种版本的“bind”。这其中包括了所有的DNS根服务器，而这些根服务器对整个服务器的正常运转起着至关重要的作用。<br> DNS服务所面临的安全隐患包括：</p>
 <ul>
 <li>DNS欺骗（DNSSpoffing）</li>
@@ -146,9 +145,8 @@
     
     <summary type="html">
     
-      &lt;p&gt;[toc]&lt;/p&gt;
-&lt;h2 id=&quot;文章简介&quot;&gt;&lt;a href=&quot;#文章简介&quot; class=&quot;headerlink&quot; title=&quot;文章简介&quot;&gt;&lt;/a&gt;文章简介&lt;/h2&gt;&lt;p&gt;本文介绍了当前互联网DNS服务器所存在的隐患（几种典型的DNS攻击方式）及安全加固&lt;/p&gt;
-&lt;h2
+      &lt;h2 id=&quot;文章简介&quot;&gt;&lt;a href=&quot;#文章简介&quot; class=&quot;headerlink&quot; title=&quot;文章简介&quot;&gt;&lt;/a&gt;文章简介&lt;/h2&gt;&lt;p&gt;本文介绍了当前互联网DNS服务器所存在的隐患（几种典型的DNS攻击方式）及安全加固&lt;/p&gt;
+&lt;h2 id=&quot;DNS服务所面临
     
     </summary>
     

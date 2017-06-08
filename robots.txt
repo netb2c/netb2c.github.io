@@ -1,0 +1,6 @@
+# robots.txt 
+User-agent: *
+Disallow: 
+Disallow: /bin/
+Sitemap: http://blog.unixmen.cn/sitemap.xml
+

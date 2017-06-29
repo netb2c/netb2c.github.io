@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-06-08T08:55:03.000Z</updated>
+  <updated>2017-06-29T02:56:59.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -14,6 +14,67 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>勒索病毒袭Petya预警</title>
+    <link href="http://blog.unixmen.cn/2017/06/29/%E5%8B%92%E7%B4%A2%E7%97%85%E6%AF%92%E8%A2%ADPetya%E9%A2%84%E8%AD%A6/"/>
+    <id>http://blog.unixmen.cn/2017/06/29/勒索病毒袭Petya预警/</id>
+    <published>2017-06-29T02:50:41.000Z</published>
+    <updated>2017-06-29T02:56:59.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>近日，代号为Petya的新一轮勒索病毒袭击了俄罗斯、英国、乌克兰等多个国家，机场、银行及大型企业被报告感染病毒，目前中国国内也已有用户中招。据报道，本轮病毒比之前的WannaCry勒索病毒更专业、更难对付。</p>
+<h3 id="病毒加密硬盘，勒索比特币"><a href="#病毒加密硬盘，勒索比特币" class="headerlink" title="病毒加密硬盘，勒索比特币"></a>病毒加密硬盘，勒索比特币</h3><p>新勒索病毒Petya不仅对文件进行加密，而且直接将整个硬盘加密、锁死，在出现以下界面并瘫痪后，其会自动向局域网内部的其它服务器及终端进行传播。<br>Petya勒索病毒感染的电脑：</p>
+<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/petya-ransomware.png" alt=""></p>
+<p>同时，用户的电脑开机后则会黑屏，并显示勒索信。信中称，用户想要解锁，需要向黑客的账户转折合300美元的比特币。</p>
+<p>勒索信息：<br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/mischa.png" alt=""></p>
+<h3 id="与之前病毒相比，威胁升级"><a href="#与之前病毒相比，威胁升级" class="headerlink" title="与之前病毒相比，威胁升级"></a>与之前病毒相比，威胁升级</h3><p>这种攻击手法十分类似于曾在上个月肆虐全球的勒索病毒，不过看起来比当时的勒索病毒更加专业、也更难以对付。 </p>
+<p>1.Petya勒索病毒变种的传播速度更快。在欧洲国家重灾区，新病毒变种的传播速度达到每10分钟感染5000余台电脑，多家运营商、石油公司、零售商、机场、ATM机等企业和公共设施已大量沦陷，甚至乌克兰副总理的电脑也遭到感染。</p>
+<p>2.感染并加密本地文件的病毒进行了更新，杀毒软件除非升级至最新版病毒库，否则无法查杀及阻止其加密本机文件系统；</p>
+<p>3.Petya综合利用了“5.12WannaCry”及“6.23勒索病毒新变种”所利用的所有Windows系统漏洞，包括MS17-010（5.12WannaCry永恒之蓝勒索病毒）及CVE-2017-8543/CVE-2017-8464（6.23勒索病毒新变种）等补丁对应的多个系统漏洞进行传播。</p>
+<p>4.Petya直接将整个硬盘加密和锁死，用户重启后直接进入勒索界面，若不支付比特币将无法进入系统。</p>
+<h3 id="防止感染，立刻这样设置电脑"><a href="#防止感染，立刻这样设置电脑" class="headerlink" title="防止感染，立刻这样设置电脑"></a>防止感染，立刻这样设置电脑</h3><ol>
+<li><p>不要轻易点击不明附件，尤其是rtf、doc等格式文件。</p>
+</li>
+<li><p>内网中存在使用相同账号、密码情况的机器请尽快修改密码，未开机的电脑请确认口令修改完毕、补丁安装完成后再进行开机操作。</p>
+</li>
+<li><p>更新操作系统补丁（MS）<a href="https://technet.microsoft.com/en-us/library/security/ms17-010.aspx" target="_blank" rel="external">https://technet.microsoft.com/en-us/library/security/ms17-010.aspx</a></p>
+</li>
+<li><p>更新 Microsoft Office/WordPad  远程执行代码漏洞（CVE -2017-0199）补丁 <a href="https://technet.microsoft.com/zh-cn/office/mt465751.aspx" target="_blank" rel="external">https://technet.microsoft.com/zh-cn/office/mt465751.aspx</a></p>
+</li>
+<li><p>禁用 WMI服务<a href="https://zhidao.baidu.com/question/91063891.html" target="_blank" rel="external">https://zhidao.baidu.com/question/91063891.html</a><br>WMI（Windows Management Instrumentation Windows 管理规范）是一项核心的Windows管理技术，你可以通过如下方法停止：</p>
+</li>
+</ol>
+<blockquote>
+<blockquote>
+<p>I. 在服务页面开启WMI服务。在开始-运行，输入services.msc，进入服务。<br>或者，在控制面板，查看方式选择大图标，选择管理工具，在管理工具中双击服务。<br>II.在服务页面，按W，找到WMI服务，找到后，双击 ，直接点击停止服务即可，如下图所示：<br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/20170629102609.png" alt=""></p>
+</blockquote>
+</blockquote>
+<p>6.更新杀毒软件<br>目前，市面上主流的杀毒软件与电脑保护软件均有插件或程序，可以绝大程度上保护电脑不受新型勒索病毒感染。<br>用户只需在软件内搜索Petya，或到其官网搜索修复工具即可。</p>
+<p>7.提高用户安全意识</p>
+<blockquote>
+<p>I. 限制管理员权限<br>Petya勒索病毒的运行需要管理员权限，企业网管可以通过严格审查限制管理员权限的方式减少攻击面，个人用户可以考虑使用非管理员权限的普通账号登陆进行日常操作。<br>II. 关闭系统崩溃重启<br>Petya勒索病毒的“发病”需要系统重启，因此想办法避免系统重启也能有效防御Petya并争取漏洞修补或者文件抢救时间。只要系统不重新启动引导，病毒就没有机会加密MFT主文件分区表，用户就有机会备份磁盘中的文件（微软官方教程）。<br>III. 备份重要数据<br>重要文件进行本地磁盘冷存储备份，以及云存储备份。</p>
+</blockquote>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;近日，代号为Petya的新一轮勒索病毒袭击了俄罗斯、英国、乌克兰等多个国家，机场、银行及大型企业被报告感染病毒，目前中国国内也已有用户中招。据报道，本轮病毒比之前的WannaCry勒索病毒更专业、更难对付。&lt;/p&gt;
+&lt;h3 id=&quot;病毒加密硬盘，勒索比特币&quot;&gt;&lt;a href
+    
+    </summary>
+    
+      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
+    
+      <category term="勒索病毒" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E5%8B%92%E7%B4%A2%E7%97%85%E6%AF%92/"/>
+    
+      <category term="安全" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E5%8B%92%E7%B4%A2%E7%97%85%E6%AF%92/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="勒索病毒" scheme="http://blog.unixmen.cn/tags/%E5%8B%92%E7%B4%A2%E7%97%85%E6%AF%92/"/>
+    
+      <category term="petya" scheme="http://blog.unixmen.cn/tags/petya/"/>
+    
+  </entry>
   
   <entry>
     <title>Git 入门及实践</title>
@@ -1890,62 +1951,6 @@
     <summary type="html">
     
       &lt;p&gt;Docker 版本在 1.12 或更高&lt;br&gt;创建或修改 /etc/docker/daemon.json 文件，修改为如下形式 （请将 加速地址 替换为在加速器页面获取的专属地址）&lt;br&gt;&lt;a href=&quot;https://www.daocloud.io/mirror#acc
-    
-    </summary>
-    
-      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
-    
-      <category term="工具" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/"/>
-    
-      <category term="容器" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/%E5%AE%B9%E5%99%A8/"/>
-    
-    
-      <category term="docker" scheme="http://blog.unixmen.cn/tags/docker/"/>
-    
-      <category term="容器" scheme="http://blog.unixmen.cn/tags/%E5%AE%B9%E5%99%A8/"/>
-    
-      <category term="容器配置" scheme="http://blog.unixmen.cn/tags/%E5%AE%B9%E5%99%A8%E9%85%8D%E7%BD%AE/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Docker配置HTTP代理</title>
-    <link href="http://blog.unixmen.cn/2017/03/02/Docker%E9%85%8D%E7%BD%AEHTTP%E4%BB%A3%E7%90%86/"/>
-    <id>http://blog.unixmen.cn/2017/03/02/Docker配置HTTP代理/</id>
-    <published>2017-03-02T07:11:24.000Z</published>
-    <updated>2017-03-29T00:42:18.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>由于服务器处于内网，无法直接连接docker hub，需要配置代理使用，如图：</p>
-<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/docker_no_proxy.png" alt=""></p>
-<p>CentOS 6下配置docker 的https_proxy 代理,只需要在/etc/sysconfig/docker 配置文件里面增加配置即可。</p>
-<p>CentOS 7 无法使用这样的配置方式进行https_proxy 配置，原因为CentOS 7 使用systemd 来管理进程,我们需要添加https_proxy进行配置，步骤如下：</p>
-<ul>
-<li>创建目录<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mkdir /etc/systemd/system/docker.service.d</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li><p>添加配置文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">echo &quot;[Service]</div><div class="line">Environment=&quot;HTTP_PROXY=http://proxy.ip.com:80&quot;&quot;|tee /etc/systemd/system/docker.service.d/http-proxy.conf</div></pre></td></tr></table></figure>
-</li>
-<li><p>Reload systemd-daemon</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">systemctl daemon-reload</div></pre></td></tr></table></figure>
-</li>
-<li><p>重启docker服务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl restart docker</div></pre></td></tr></table></figure>
-</li>
-<li><p>检查变量是否加载</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl show docker --property Environment</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li>测试是否生效<br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/docker_proxy_1.png" alt=""></li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;由于服务器处于内网，无法直接连接docker hub，需要配置代理使用，如图：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/docker_no_proxy.p
     
     </summary>
     

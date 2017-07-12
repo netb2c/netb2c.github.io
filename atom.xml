@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-06-29T02:56:59.000Z</updated>
+  <updated>2017-07-12T10:10:46.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -16,11 +16,81 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>修复nginx漏洞（CVE-2017-7529）</title>
+    <link href="http://blog.unixmen.cn/2017/07/12/%E4%BF%AE%E5%A4%8Dnginx%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2017-7529%EF%BC%89/"/>
+    <id>http://blog.unixmen.cn/2017/07/12/修复nginx漏洞（CVE-2017-7529）/</id>
+    <published>2017-07-12T10:05:02.000Z</published>
+    <updated>2017-07-12T10:10:46.000Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="漏洞介绍："><a href="#漏洞介绍：" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>2017-07-12 nginx 发布高危漏洞通报，并提供了修复方法及数据包。</p>
+<h2 id="漏洞信息："><a href="#漏洞信息：" class="headerlink" title="漏洞信息："></a>漏洞信息：</h2><p>漏洞编号：CVE-2017-7529<br>漏洞名称：Nginx敏感信息泄露<br>官方评级：高危<br>漏洞描述：当使用nginx标准模块时，允许攻击者如果从缓存返回响应，则获取缓存文件头，在某些配置中，缓存文件头可能包含IP地址的后端服务器或其他敏感信息，从而导致信息泄露。<br>漏洞利用条件和方式：远程利用<br>漏洞影响范围：Nginx 0.5.6 - 1.13.2<br>修复建议：升级到Nginx 1.13.3, 1.12.1。<br>漏洞详情查看：<a href="http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html" target="_blank" rel="external">http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html</a><br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/20170712175750.png" alt=""></p>
+<h2 id="漏洞修复方法："><a href="#漏洞修复方法：" class="headerlink" title="漏洞修复方法："></a>漏洞修复方法：</h2><h3 id="Centos7"><a href="#Centos7" class="headerlink" title="Centos7:"></a>Centos7:</h3><ul>
+<li><p>查看当前版本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nginx -V</div></pre></td></tr></table></figure>
+</li>
+<li><p>下载漏洞修复软件包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">wget -Sc http://nginx.org/download/nginx-1.12.1.tar.gz</div></pre></td></tr></table></figure>
+</li>
+<li><p>解压程序源码包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">tar -zxf nginx-1.12.1.tar.gz</div></pre></td></tr></table></figure>
+</li>
+<li><p>进入解压后的文件目录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cd nginx-1.12.1</div></pre></td></tr></table></figure>
+</li>
+<li><p>使用原有参数(nginx -V查看)进行配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">./configure  --prefix=/opt/webserver/nginx --without-http_memcached_module --user=nginx --group=nginx --with-http_image_filter_module --with-http_stub_status_module --with-http_ssl_module --with-http_gzip_static_module --with-openssl=/usr/local/src/openssl-1.0.2l --with-zlib=/usr/local/src/zlib-1.2.11/ --with-pcre --with-http_sub_module --add-module=/usr/local/src/nginx-accesskey --add-module=/usr/local/src/ngx_http_geoip2_module --with-http_realip_module --with-http_mp4_module</div></pre></td></tr></table></figure>
+</li>
+<li><p>然后编译，但不要make install，切记</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">make</div></pre></td></tr></table></figure>
+</li>
+<li><p>编译完成后可以在objs目录下看到有个名为nginx执行文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ls objs/nginx</div><div class="line">[root@fqptuo nginx-1.12.1]# ls -l objs/nginx</div><div class="line">-rwxr-xr-x 1 root root 9031768 Jul 12 13:57 objs/nginx</div></pre></td></tr></table></figure>
+</li>
+<li><p>备份原有的nginx</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mv /opt/webserver/nginx/sbin/nginx&#123;,.1.12.0&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>复制编译后的nginx文件到原有目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cp objs/nginx /opt/webserver/nginx/sbin/nginx</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看升级结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nginx -v</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看当前nginx服务状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl status nginx</div></pre></td></tr></table></figure>
+</li>
+<li><p>重新启动nginx服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl restart nginx</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看重启后的nginx服务状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl status nginx</div></pre></td></tr></table></figure>
+</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;漏洞介绍：&quot;&gt;&lt;a href=&quot;#漏洞介绍：&quot; class=&quot;headerlink&quot; title=&quot;漏洞介绍：&quot;&gt;&lt;/a&gt;漏洞介绍：&lt;/h3&gt;&lt;p&gt;2017-07-12 nginx 发布高危漏洞通报，并提供了修复方法及数据包。&lt;/p&gt;
+&lt;h2 id=&quot;漏洞信息：&quot;
+    
+    </summary>
+    
+      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
+    
+      <category term="漏洞" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/"/>
+    
+      <category term="安全" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/%E5%AE%89%E5%85%A8/"/>
+    
+    
+      <category term="nginx" scheme="http://blog.unixmen.cn/tags/nginx/"/>
+    
+  </entry>
+  
+  <entry>
     <title>勒索病毒袭Petya预警</title>
     <link href="http://blog.unixmen.cn/2017/06/29/%E5%8B%92%E7%B4%A2%E7%97%85%E6%AF%92%E8%A2%ADPetya%E9%A2%84%E8%AD%A6/"/>
     <id>http://blog.unixmen.cn/2017/06/29/勒索病毒袭Petya预警/</id>
     <published>2017-06-29T02:50:41.000Z</published>
-    <updated>2017-06-29T02:56:59.000Z</updated>
+    <updated>2017-06-29T03:06:38.000Z</updated>
     
     <content type="html"><![CDATA[<p>近日，代号为Petya的新一轮勒索病毒袭击了俄罗斯、英国、乌克兰等多个国家，机场、银行及大型企业被报告感染病毒，目前中国国内也已有用户中招。据报道，本轮病毒比之前的WannaCry勒索病毒更专业、更难对付。</p>
 <h3 id="病毒加密硬盘，勒索比特币"><a href="#病毒加密硬盘，勒索比特币" class="headerlink" title="病毒加密硬盘，勒索比特币"></a>病毒加密硬盘，勒索比特币</h3><p>新勒索病毒Petya不仅对文件进行加密，而且直接将整个硬盘加密、锁死，在出现以下界面并瘫痪后，其会自动向局域网内部的其它服务器及终端进行传播。<br>Petya勒索病毒感染的电脑：</p>
@@ -45,9 +115,7 @@
 </li>
 </ol>
 <blockquote>
-<blockquote>
 <p>I. 在服务页面开启WMI服务。在开始-运行，输入services.msc，进入服务。<br>或者，在控制面板，查看方式选择大图标，选择管理工具，在管理工具中双击服务。<br>II.在服务页面，按W，找到WMI服务，找到后，双击 ，直接点击停止服务即可，如下图所示：<br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/20170629102609.png" alt=""></p>
-</blockquote>
 </blockquote>
 <p>6.更新杀毒软件<br>目前，市面上主流的杀毒软件与电脑保护软件均有插件或程序，可以绝大程度上保护电脑不受新型勒索病毒感染。<br>用户只需在软件内搜索Petya，或到其官网搜索修复工具即可。</p>
 <p>7.提高用户安全意识</p>
@@ -1934,38 +2002,6 @@
       <category term="容器" scheme="http://blog.unixmen.cn/tags/%E5%AE%B9%E5%99%A8/"/>
     
       <category term="Trouble shooting" scheme="http://blog.unixmen.cn/tags/Trouble-shooting/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Docker配置Daocloud加速器</title>
-    <link href="http://blog.unixmen.cn/2017/03/02/Docker%E9%85%8D%E7%BD%AEDaocloud%E5%8A%A0%E9%80%9F%E5%99%A8/"/>
-    <id>http://blog.unixmen.cn/2017/03/02/Docker配置Daocloud加速器/</id>
-    <published>2017-03-02T07:12:31.000Z</published>
-    <updated>2017-03-29T00:40:48.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Docker 版本在 1.12 或更高<br>创建或修改 /etc/docker/daemon.json 文件，修改为如下形式 （请将 加速地址 替换为在加速器页面获取的专属地址）<br><a href="https://www.daocloud.io/mirror#accelerator-doc" target="_blank" rel="external">Daocloud加速器地址</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    &quot;registry-mirrors&quot;: [</div><div class="line">        &quot;加速地址&quot;</div><div class="line">    ],</div><div class="line">    &quot;insecure-registries&quot;: []</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Docker 版本在 1.12 或更高&lt;br&gt;创建或修改 /etc/docker/daemon.json 文件，修改为如下形式 （请将 加速地址 替换为在加速器页面获取的专属地址）&lt;br&gt;&lt;a href=&quot;https://www.daocloud.io/mirror#acc
-    
-    </summary>
-    
-      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
-    
-      <category term="工具" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/"/>
-    
-      <category term="容器" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/%E5%AE%B9%E5%99%A8/"/>
-    
-    
-      <category term="docker" scheme="http://blog.unixmen.cn/tags/docker/"/>
-    
-      <category term="容器" scheme="http://blog.unixmen.cn/tags/%E5%AE%B9%E5%99%A8/"/>
-    
-      <category term="容器配置" scheme="http://blog.unixmen.cn/tags/%E5%AE%B9%E5%99%A8%E9%85%8D%E7%BD%AE/"/>
     
   </entry>
   

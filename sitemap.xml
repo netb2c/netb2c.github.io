@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://blog.unixmen.cn/2017/07/12/%E4%BF%AE%E5%A4%8Dnginx%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2017-7529%EF%BC%89/</loc>
+    
+    <lastmod>2017-07-12T10:10:46.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.unixmen.cn/2017/06/29/%E5%8B%92%E7%B4%A2%E7%97%85%E6%AF%92%E8%A2%ADPetya%E9%A2%84%E8%AD%A6/</loc>
     
-    <lastmod>2017-06-29T02:56:59.000Z</lastmod>
+    <lastmod>2017-06-29T03:06:38.000Z</lastmod>
     
   </url>
   

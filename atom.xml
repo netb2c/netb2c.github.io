@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://blog.unixmen.cn/"/>
-  <updated>2017-07-12T10:10:46.000Z</updated>
+  <updated>2017-07-13T01:58:25.000Z</updated>
   <id>http://blog.unixmen.cn/</id>
   
   <author>
@@ -16,11 +16,85 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>如何添加Nginx开机启动</title>
+    <link href="http://blog.unixmen.cn/2017/07/13/%E5%A6%82%E4%BD%95%E6%B7%BB%E5%8A%A0nginx%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/"/>
+    <id>http://blog.unixmen.cn/2017/07/13/如何添加nginx开机启动/</id>
+    <published>2017-07-13T01:55:14.000Z</published>
+    <updated>2017-07-13T01:58:25.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>#如何添加nginx开机启动</p>
+<h2 id="简述："><a href="#简述：" class="headerlink" title="简述："></a>简述：</h2><p>Nginx在编译安装完成后不会注册为系统服务，所以需要手工添加系统服务。本文介绍在CentOS 6和CentOS 7 下添加nginx系统开机启动服务的方法。</p>
+<p>##Centos7 添加nginx开机启动</p>
+<h3 id="建立服务管理文件："><a href="#建立服务管理文件：" class="headerlink" title="建立服务管理文件："></a>建立服务管理文件：</h3><ul>
+<li>新建/usr/lib/systemd/system/nginx.service文件，并添加以下内容：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">#nginx服务配置到该文件中</div><div class="line">#服务描述性的配置</div><div class="line">[Unit]</div><div class="line">Description=nginx</div><div class="line">Documentation=http://nginx.org/en/docs/</div><div class="line">After=network.target remote-fs.target nss-lookup.target</div><div class="line">#服务关键配置</div><div class="line">[Service]</div><div class="line">Type=forking</div><div class="line">#pid文件位置一定要与nginx实际配置文件中的pid配置路径一致，这个很重要，否则会服务启动失败</div><div class="line">PIDFile=/usr/local/nginx/logs/nginx.pid</div><div class="line">#启动前检测 nginx配置文件是否存在问题</div><div class="line">ExecStartPre=/usr/local/nginx/sbin/nginx -t -c /usr/local/nginx/conf/nginx.conf</div><div class="line">#启动</div><div class="line">ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf</div><div class="line">#重启</div><div class="line">ExecReload=/bin/kill -s HUP $MAINPID</div><div class="line">#关闭</div><div class="line">ExecStop=/bin/kill -s QUIT $MAINPID</div><div class="line">PrivateTmp=true</div><div class="line">[Install]</div><div class="line">WantedBy=multi-user.target</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="使用systemd进行管理服务"><a href="#使用systemd进行管理服务" class="headerlink" title="使用systemd进行管理服务"></a>使用systemd进行管理服务</h3><ul>
+<li><p>启动nginx服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl start nginx.service</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看nginx服务状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl status nginx.service</div></pre></td></tr></table></figure>
+</li>
+<li><p>设置nginx.service开机启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl enable nginx.service</div></pre></td></tr></table></figure>
+</li>
+<li><p>测试重新加载</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl reload nginx.service</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>##CentOS 6 添加nginx开机启动:</p>
+<h3 id="建立服务管理文件：-1"><a href="#建立服务管理文件：-1" class="headerlink" title="建立服务管理文件："></a>建立服务管理文件：</h3><ul>
+<li><p>新建 /etc/init.d/nginx 并添加以下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div></pre></td><td class="code"><pre><div class="line">#!/bin/bash</div><div class="line"># nginx Startup script for the Nginx HTTP Server</div><div class="line"># it is v.1.2.1 version.</div><div class="line"># chkconfig: - 85 15</div><div class="line"># description: Nginx is a high-performance web and proxy server.</div><div class="line">#              It has a lot of features, but it&apos;s not for everyone.</div><div class="line"># processname: nginx</div><div class="line"># pidfile: /var/run/nginx.pid</div><div class="line"># config: /usr/local/nginx/conf/nginx.conf</div><div class="line"># nginxd、nginx_config、nginx_pid一定要根据自己的实际配置保持一致，这个很重要，否则会服务启动失败</div><div class="line">nginxd=/usr/local/nginx/sbin/nginx</div><div class="line">nginx_config=/usr/local/nginx/conf/nginx.conf</div><div class="line">nginx_pid=/var/run/nginx.pid</div><div class="line">RETVAL=0</div><div class="line">prog=&quot;nginx&quot;</div><div class="line"># Source function library.</div><div class="line">. /etc/rc.d/init.d/functions</div><div class="line"># Source networking configuration.</div><div class="line">. /etc/sysconfig/network</div><div class="line"># Check that networking is up.</div><div class="line">[ $&#123;NETWORKING&#125; = &quot;no&quot; ] &amp;&amp; exit 0</div><div class="line">[ -x $nginxd ] || exit 0</div><div class="line"># Start nginx daemons functions.</div><div class="line">start() &#123;</div><div class="line">if [ -e $nginx_pid ];then</div><div class="line">   echo &quot;nginx already running....&quot;</div><div class="line">   exit 1</div><div class="line">fi</div><div class="line">   echo -n $&quot;Starting $prog: &quot;</div><div class="line">   daemon $nginxd -c $&#123;nginx_config&#125;</div><div class="line">   RETVAL=$?</div><div class="line">   echo</div><div class="line">   [ $RETVAL = 0 ] &amp;&amp; touch /var/lock/subsys/nginx</div><div class="line">   return $RETVAL</div><div class="line">&#125;</div><div class="line"># Stop nginx daemons functions.</div><div class="line">stop() &#123;</div><div class="line">        echo -n $&quot;Stopping $prog: &quot;</div><div class="line">        killproc $nginxd</div><div class="line">        RETVAL=$?</div><div class="line">        echo</div><div class="line">        [ $RETVAL = 0 ] &amp;&amp; rm -f /var/lock/subsys/nginx /var/run/nginx.pid</div><div class="line">&#125;</div><div class="line"># reload nginx service functions.</div><div class="line">reload() &#123;</div><div class="line">    echo -n $&quot;Reloading $prog: &quot;</div><div class="line">    #kill -HUP `cat $&#123;nginx_pid&#125;`</div><div class="line">    killproc $nginxd -HUP</div><div class="line">    RETVAL=$?</div><div class="line">    echo</div><div class="line">&#125;</div><div class="line"># See how we were called.</div><div class="line">case &quot;$1&quot; in</div><div class="line">start)</div><div class="line">        start</div><div class="line">        ;;</div><div class="line">stop)</div><div class="line">        stop</div><div class="line">        ;;</div><div class="line">reload)</div><div class="line">        reload</div><div class="line">        ;;</div><div class="line">restart)</div><div class="line">        stop</div><div class="line">        start</div><div class="line">        ;;</div><div class="line">status)</div><div class="line">        status $prog</div><div class="line">        RETVAL=$?</div><div class="line">        ;;</div><div class="line">*)</div><div class="line">        echo $&quot;Usage: $prog &#123;start|stop|restart|reload|status|help&#125;&quot;</div><div class="line">        exit 1</div><div class="line">esac</div><div class="line">exit $RETVAL</div></pre></td></tr></table></figure>
+</li>
+<li><p>添加执行权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">chmod 755 /etc/init.d/nginx</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="CentOS6-下的nginx服务管理"><a href="#CentOS6-下的nginx服务管理" class="headerlink" title="CentOS6 下的nginx服务管理"></a>CentOS6 下的nginx服务管理</h3><ul>
+<li><p>添加nginx服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">chkconfig --add nginx</div></pre></td></tr></table></figure>
+</li>
+<li><p>设置nginx开机启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">chkconfig nginx 35 on</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看添加的服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">chkconfig --list |grep nginx</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动nginx服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service nginx start</div></pre></td></tr></table></figure>
+</li>
+<li><p>查看nginx服务状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service nginx status</div></pre></td></tr></table></figure>
+</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;#如何添加nginx开机启动&lt;/p&gt;
+&lt;h2 id=&quot;简述：&quot;&gt;&lt;a href=&quot;#简述：&quot; class=&quot;headerlink&quot; title=&quot;简述：&quot;&gt;&lt;/a&gt;简述：&lt;/h2&gt;&lt;p&gt;Nginx在编译安装完成后不会注册为系统服务，所以需要手工添加系统服务。本文介绍在Cen
+    
+    </summary>
+    
+      <category term="nginx" scheme="http://blog.unixmen.cn/categories/nginx/"/>
+    
+      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/nginx/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
+    
+      <category term="工具" scheme="http://blog.unixmen.cn/categories/nginx/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/"/>
+    
+    
+      <category term="nginx" scheme="http://blog.unixmen.cn/tags/nginx/"/>
+    
+  </entry>
+  
+  <entry>
     <title>修复nginx漏洞（CVE-2017-7529）</title>
     <link href="http://blog.unixmen.cn/2017/07/12/%E4%BF%AE%E5%A4%8Dnginx%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2017-7529%EF%BC%89/"/>
     <id>http://blog.unixmen.cn/2017/07/12/修复nginx漏洞（CVE-2017-7529）/</id>
     <published>2017-07-12T10:05:02.000Z</published>
-    <updated>2017-07-12T10:10:46.000Z</updated>
+    <updated>2017-07-13T02:15:33.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="漏洞介绍："><a href="#漏洞介绍：" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>2017-07-12 nginx 发布高危漏洞通报，并提供了修复方法及数据包。</p>
 <h2 id="漏洞信息："><a href="#漏洞信息：" class="headerlink" title="漏洞信息："></a>漏洞信息：</h2><p>漏洞编号：CVE-2017-7529<br>漏洞名称：Nginx敏感信息泄露<br>官方评级：高危<br>漏洞描述：当使用nginx标准模块时，允许攻击者如果从缓存返回响应，则获取缓存文件头，在某些配置中，缓存文件头可能包含IP地址的后端服务器或其他敏感信息，从而导致信息泄露。<br>漏洞利用条件和方式：远程利用<br>漏洞影响范围：Nginx 0.5.6 - 1.13.2<br>修复建议：升级到Nginx 1.13.3, 1.12.1。<br>漏洞详情查看：<a href="http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html" target="_blank" rel="external">http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html</a><br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/20170712175750.png" alt=""></p>
@@ -52,8 +126,14 @@
 <li><p>复制编译后的nginx文件到原有目录</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">cp objs/nginx /opt/webserver/nginx/sbin/nginx</div></pre></td></tr></table></figure>
 </li>
-<li><p>查看升级结果</p>
+<li><p>查看升级后的版本</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nginx -v</div></pre></td></tr></table></figure>
+</li>
+<li><p>检查升级后的nginx版本与当前配置是否测试通过</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nginx -t</div></pre></td></tr></table></figure>
+</li>
+<li><p>平滑升级nginx</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">make upgrade</div></pre></td></tr></table></figure>
 </li>
 <li><p>查看当前nginx服务状态</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl status nginx</div></pre></td></tr></table></figure>
@@ -79,6 +159,8 @@
       <category term="漏洞" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/"/>
     
       <category term="安全" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/%E5%AE%89%E5%85%A8/"/>
+    
+      <category term="nginx" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/%E6%BC%8F%E6%B4%9E/%E5%AE%89%E5%85%A8/nginx/"/>
     
     
       <category term="nginx" scheme="http://blog.unixmen.cn/tags/nginx/"/>
@@ -1925,83 +2007,6 @@
     
     
       <category term="其他" scheme="http://blog.unixmen.cn/tags/%E5%85%B6%E4%BB%96/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Docker 私有仓库无法上传镜像的问题</title>
-    <link href="http://blog.unixmen.cn/2017/03/02/Docker-%E7%A7%81%E6%9C%89%E4%BB%93%E5%BA%93%E6%97%A0%E6%B3%95%E4%B8%8A%E4%BC%A0%E9%95%9C%E5%83%8F%E7%9A%84%E9%97%AE%E9%A2%98/"/>
-    <id>http://blog.unixmen.cn/2017/03/02/Docker-私有仓库无法上传镜像的问题/</id>
-    <published>2017-03-02T09:08:16.000Z</published>
-    <updated>2017-03-29T00:41:20.000Z</updated>
-    
-    <content type="html"><![CDATA[<p>Docker 私有仓库启动后或者新节点配置私有仓库后，可能会出现无法push镜像到私有仓库，或无法pull镜像的问题如下图：</p>
-<ul>
-<li>无法push镜像</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/dockertb403.png" alt=""></p>
-<ul>
-<li>无法pull镜像</li>
-</ul>
-<p> <img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/dockertb403_2.png" alt=""></p>
-<p><strong>导致原因：</strong><br>因为启动的registry服务不是安全可信赖的</p>
-<p><strong> 解决方法如下：</strong></p>
-<ul>
-<li><p>CentOS 6</p>
-<ul>
-<li><p>修改docker的配置文件/etc/default/docker，添加下面的内容，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DOCKER_OPTS=&quot;--insecure-registry xxx.xxx.xxx.xxx:5000&quot;</div></pre></td></tr></table></figure>
-</li>
-<li><p>重启docker服务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">service docker restart</div></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>CentOS 7</p>
-<ul>
-<li><p>创建或修改 /etc/docker/daemon.json 文件，添加如下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  &quot;insecure-registries&quot;: [&quot;xxx.xxx.xxx.xxx:5000&quot;]</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>重启Docker 服务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl restart docker</div></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>测试：</p>
-<ul>
-<li>push 测试 </li>
-</ul>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/dockertb403_1.png" alt=""></p>
-<ul>
-<li>pull 测试</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/dockertb403_3.png" alt=""></p>
-]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;Docker 私有仓库启动后或者新节点配置私有仓库后，可能会出现无法push镜像到私有仓库，或无法pull镜像的问题如下图：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;无法push镜像&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&quot;https://raw.githubuserconten
-    
-    </summary>
-    
-      <category term="技术文档" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/"/>
-    
-      <category term="工具" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/"/>
-    
-      <category term="容器" scheme="http://blog.unixmen.cn/categories/%E6%8A%80%E6%9C%AF%E6%96%87%E6%A1%A3/Tools/%E5%AE%B9%E5%99%A8/"/>
-    
-    
-      <category term="docker" scheme="http://blog.unixmen.cn/tags/docker/"/>
-    
-      <category term="容器" scheme="http://blog.unixmen.cn/tags/%E5%AE%B9%E5%99%A8/"/>
-    
-      <category term="Trouble shooting" scheme="http://blog.unixmen.cn/tags/Trouble-shooting/"/>
     
   </entry>
   

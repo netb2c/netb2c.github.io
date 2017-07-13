@@ -94,7 +94,7 @@
     <link href="http://blog.unixmen.cn/2017/07/12/%E4%BF%AE%E5%A4%8Dnginx%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2017-7529%EF%BC%89/"/>
     <id>http://blog.unixmen.cn/2017/07/12/修复nginx漏洞（CVE-2017-7529）/</id>
     <published>2017-07-12T10:05:02.000Z</published>
-    <updated>2017-07-13T02:15:33.000Z</updated>
+    <updated>2017-07-13T03:03:57.000Z</updated>
     
     <content type="html"><![CDATA[<h3 id="漏洞介绍："><a href="#漏洞介绍：" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>2017-07-12 nginx 发布高危漏洞通报，并提供了修复方法及数据包。</p>
 <h2 id="漏洞信息："><a href="#漏洞信息：" class="headerlink" title="漏洞信息："></a>漏洞信息：</h2><p>漏洞编号：CVE-2017-7529<br>漏洞名称：Nginx敏感信息泄露<br>官方评级：高危<br>漏洞描述：当使用nginx标准模块时，允许攻击者如果从缓存返回响应，则获取缓存文件头，在某些配置中，缓存文件头可能包含IP地址的后端服务器或其他敏感信息，从而导致信息泄露。<br>漏洞利用条件和方式：远程利用<br>漏洞影响范围：Nginx 0.5.6 - 1.13.2<br>修复建议：升级到Nginx 1.13.3, 1.12.1。<br>漏洞详情查看：<a href="http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html" target="_blank" rel="external">http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html</a><br><img src="https://raw.githubusercontent.com/netb2c/MarkdownPhotos/master/20170712175750.png" alt=""></p>
@@ -132,19 +132,18 @@
 <li><p>检查升级后的nginx版本与当前配置是否测试通过</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">nginx -t</div></pre></td></tr></table></figure>
 </li>
-<li><p>平滑升级nginx</p>
+<li><p>优雅的平滑升级nginx</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">make upgrade</div></pre></td></tr></table></figure>
+<ul>
+<li>正常情况下会有类似以下的输出：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/opt/webserver/nginx/sbin/nginx -t</div><div class="line">nginx: the configuration file /opt/webserver/nginx/conf/nginx.conf syntax is ok</div><div class="line">nginx: configuration file /opt/webserver/nginx/conf/nginx.conf test is successful</div><div class="line">kill -USR2 `cat /opt/webserver/nginx/logs/nginx.pid`</div><div class="line">sleep 1</div><div class="line">test -f /opt/webserver/nginx/logs/nginx.pid.oldbin</div><div class="line">kill -QUIT `cat /opt/webserver/nginx/logs/nginx.pid.oldbin`</div></pre></td></tr></table></figure>
+</li>
+</ul>
 </li>
 <li><p>查看当前nginx服务状态</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl status nginx</div></pre></td></tr></table></figure>
 </li>
-<li><p>重新启动nginx服务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl restart nginx</div></pre></td></tr></table></figure>
-</li>
-<li><p>查看重启后的nginx服务状态</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">systemctl status nginx</div></pre></td></tr></table></figure>
-</li>
 </ul>
+<p>至此，nginx服务升级完成。</p>
 ]]></content>
     
     <summary type="html">

@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://blog.unixmen.cn/2016/09/27/MySQL%205.7+%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%8F%98%E5%8C%96/</loc>
+    <loc>http://blog.unixmen.cn/2017/01/15/MySQL+MHA%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
@@ -16,13 +16,6 @@
   </url>
   
   <url>
-    <loc>http://blog.unixmen.cn/2018/04/26/%E9%85%8D%E7%BD%AEdocker%E4%BD%BF%E7%94%A8%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E6%BA%90%E5%8F%8A%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9F%E5%99%A8/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>http://blog.unixmen.cn/2018/06/04/%E9%85%8D%E7%BD%AErsync+inotify%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
@@ -30,63 +23,7 @@
   </url>
   
   <url>
-    <loc>http://blog.unixmen.cn/2015/12/01/hello-world/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2016/08/25/openresty+php/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2017/01/26/disconf+%E5%88%86%E5%B8%83%E5%BC%8F%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0%E9%83%A8%E7%BD%B2/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2018/06/12/ESXI%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%A3%81%E7%9B%98%E5%9C%A8%E7%BA%BF%E6%89%A9%E5%AE%B9/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2017/01/24/FastDFS%E9%83%A8%E7%BD%B2%E9%85%8D%E7%BD%AE/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2016/12/20/zabbix3.0+install/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2015/12/21/block_ip_shell/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2016/05/17/Xshell+Linux-key/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2016/06/20/zabbix+install/</loc>
+    <loc>http://blog.unixmen.cn/2018/04/26/%E9%85%8D%E7%BD%AEdocker%E4%BD%BF%E7%94%A8%E5%9B%BD%E5%86%85%E9%95%9C%E5%83%8F%E6%BA%90%E5%8F%8A%E9%95%9C%E5%83%8F%E5%8A%A0%E9%80%9F%E5%99%A8/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
@@ -100,7 +37,7 @@
   </url>
   
   <url>
-    <loc>http://blog.unixmen.cn/2016/06/10/Goodsync+FTP+%E8%B7%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/</loc>
+    <loc>http://blog.unixmen.cn/2016/12/20/zabbix3.0+install/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
@@ -114,6 +51,34 @@
   </url>
   
   <url>
+    <loc>http://blog.unixmen.cn/2016/06/20/zabbix+install/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2018/06/12/ESXI%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%A3%81%E7%9B%98%E5%9C%A8%E7%BA%BF%E6%89%A9%E5%AE%B9/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2016/12/01/openresty+%E7%BC%96%E8%AF%91%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2016/08/25/openresty+php/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.unixmen.cn/2018/05/29/pyenv%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
@@ -121,21 +86,42 @@
   </url>
   
   <url>
-    <loc>http://blog.unixmen.cn/2016/09/28/MySQL%205.6+%E5%8D%95%E6%9C%BA%E5%A4%9A%E5%AE%9E%E4%BE%8B/</loc>
+    <loc>http://blog.unixmen.cn/2017/01/26/disconf+%E5%88%86%E5%B8%83%E5%BC%8F%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%B9%B3%E5%8F%B0%E9%83%A8%E7%BD%B2/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.unixmen.cn/2016/09/22/Centos6+init/</loc>
+    <loc>http://blog.unixmen.cn/2017/01/24/FastDFS%E9%83%A8%E7%BD%B2%E9%85%8D%E7%BD%AE/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://blog.unixmen.cn/2017/01/15/MySQL+MHA%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2/</loc>
+    <loc>http://blog.unixmen.cn/2016/12/10/keepalived%E9%83%A8%E7%BD%B2/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2015/12/21/block_ip_shell/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2016/06/10/Goodsync+FTP+%E8%B7%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2015/12/01/hello-world/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
@@ -149,7 +135,42 @@
   </url>
   
   <url>
+    <loc>http://blog.unixmen.cn/2016/09/27/MySQL%205.7+%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%8F%98%E5%8C%96/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://blog.unixmen.cn/2018/03/20/Nginx+APP%E6%8E%A5%E5%8F%A3%E5%A4%9A%E7%89%88%E6%9C%AC%E5%85%BC%E5%AE%B9/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2016/09/28/MySQL%205.6+%E5%8D%95%E6%9C%BA%E5%A4%9A%E5%AE%9E%E4%BE%8B/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2016/08/26/Redis%E6%8A%A5%E9%94%99%EF%BC%9ARedis%20is%20configured%20to%20save%20RDB%20snapshots/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2016/05/17/Xshell+Linux-key/</loc>
+    
+    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://blog.unixmen.cn/2016/09/22/Centos6+init/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
@@ -164,27 +185,6 @@
   
   <url>
     <loc>http://blog.unixmen.cn/2017/02/02/Redis-Cluster+%E9%83%A8%E7%BD%B2%E9%85%8D%E7%BD%AE/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2016/08/26/Redis%E6%8A%A5%E9%94%99%EF%BC%9ARedis%20is%20configured%20to%20save%20RDB%20snapshots/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2016/12/01/openresty+%E7%BC%96%E8%AF%91%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/</loc>
-    
-    <lastmod>2018-06-11T14:53:04.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://blog.unixmen.cn/2016/12/10/keepalived%E9%83%A8%E7%BD%B2/</loc>
     
     <lastmod>2018-06-11T14:53:04.000Z</lastmod>
     
